@@ -5,6 +5,8 @@ import (
 	"html/template"
 	"net/http"
 
+	"github.com/julienschmidt/httprouter"
+
 	"github.com/bashmohandes/go-askme/internal/askme/models"
 )
 
@@ -41,14 +43,19 @@ func me(w http.ResponseWriter, r *http.Request) {
 	render(w, pageModel{"me", "Me", nil})
 }
 
+func topUserAnswers(w http.ResponseWriter, r *http.Request) {
+	render(w, pageModel{"top", "Top Answers", nil})
+}
+
 func render(w http.ResponseWriter, p pageModel) {
 	tpl.ExecuteTemplate(w, "master", p)
 }
 
 //Blog returns a new blog
 func Blog() http.Handler {
-	mux := http.NewServeMux()
-	mux.HandleFunc("/", index)
-	mux.HandleFunc("/me", me)
+	mux := httprouter.New()
+	mux.HandlerFunc("GET", "/", index)
+	mux.HandlerFunc("GET", "/me", me)
+	mux.HandlerFunc("GET", "/:userid/top", topUserAnswers)
 	return mux
 }
