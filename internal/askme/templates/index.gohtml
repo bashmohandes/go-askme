@@ -1,0 +1,10 @@
+{{define "index"}}
+<h1>Hello INDEX</h1>
+<div>
+    <ul>
+    {{range .Data}}
+        <li>{{.Text}}</li>
+    {{end}}
+    </ul>
+</div>
+{{end}}

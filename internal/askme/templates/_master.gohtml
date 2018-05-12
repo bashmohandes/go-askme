@@ -1,0 +1,14 @@
+{{define "master"}}
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Test Templates {{ .Title }} </title>        
+    </head>
+    <bod>        
+        {{ RenderTemplate .Template . }}
+    </body>
+    <footer>
+        copyrights reserved Mohamed Elsherif @Bashmohandes
+    </footer>    
+</html>
+{{end}}
