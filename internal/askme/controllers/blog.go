@@ -34,11 +34,15 @@ func renderTemplate(name string, data interface{}) (ret template.HTML, err error
 
 func index(w http.ResponseWriter, r *http.Request) {
 	questions := models.LoadQuestions("Bashmohandes")
-	tpl.ExecuteTemplate(w, "master", pageModel{"index", "Index", questions})
+	render(w, pageModel{"index", "Index", questions})
 }
 
 func me(w http.ResponseWriter, r *http.Request) {
-	tpl.ExecuteTemplate(w, "master", pageModel{"me", "Me", nil})
+	render(w, pageModel{"me", "Me", nil})
+}
+
+func render(w http.ResponseWriter, p pageModel) {
+	tpl.ExecuteTemplate(w, "master", p)
 }
 
 //Blog returns a new blog
