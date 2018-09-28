@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"html/template"
 	"net/http"
+	"strings"
 
 	"github.com/julienschmidt/httprouter"
 
@@ -24,7 +25,6 @@ func init() {
 	tpl.Funcs(map[string]interface{}{
 		"RenderTemplate": renderTemplate,
 	})
-	tpl.ParseGlob("../../internal/askme/templates/*")
 }
 
 func renderTemplate(name string, data interface{}) (ret template.HTML, err error) {
@@ -51,8 +51,19 @@ func render(w http.ResponseWriter, p pageModel) {
 	tpl.ExecuteTemplate(w, "master", p)
 }
 
+// TemplateFetcher fetches template by name
+type TemplateFetcher interface {
+	List() []string
+	String(name string) string
+}
+
 //Blog returns a new blog
-func Blog() http.Handler {
+func Blog(fetcher TemplateFetcher) http.Handler {
+	for _, t := range fetcher.List() {
+		if strings.HasSuffix(t, ".gohtml") {
+			tpl.Parse(fetcher.String(t))
+		}
+	}
 	mux := httprouter.New()
 	mux.HandlerFunc("GET", "/", index)
 	mux.HandlerFunc("GET", "/me", me)

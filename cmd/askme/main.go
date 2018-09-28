@@ -11,5 +11,6 @@ import (
 func main() {
 	fmt.Println("Hello!")
 	models.QuestionsRepo = repository.NewQuestionRepo()
+	models.AnswersRepo = repository.NewAnswerRepository()
 	askme.Start()
 }
