@@ -12,6 +12,3 @@ type Answer struct {
 type AnswerRepository interface {
 	LoadAnswers(userID UniqueID) []Answer
 }
-
-// AnswersRepo is the reference to the configured repository object
-var AnswersRepo AnswerRepository

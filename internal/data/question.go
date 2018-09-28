@@ -51,7 +51,7 @@ func (r *repo) LoadQuestions(userID models.UniqueID) []models.Question {
 	return result
 }
 
-// NewQuestionRepo creates a new repo object
-func NewQuestionRepo() models.QuestionRepository {
+// NewQuestionRepository creates a new repo object
+func NewQuestionRepository() models.QuestionRepository {
 	return &repo{}
 }

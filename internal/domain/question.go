@@ -11,11 +11,3 @@ type Question struct {
 	Text     string
 	AnswerID UniqueID
 }
-
-// LoadQuestions load questions model
-func LoadQuestions(userID UniqueID) []Question {
-	return QuestionsRepo.LoadQuestions(userID)
-}
-
-// QuestionsRepo is the reference to the configured repository object
-var QuestionsRepo QuestionRepository

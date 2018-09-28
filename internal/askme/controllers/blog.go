@@ -19,6 +19,7 @@ type pageModel struct {
 }
 
 var tpl *template.Template
+var questionService QuestionService
 
 //Blog represents the main app model
 func init() {
@@ -36,7 +37,7 @@ func renderTemplate(name string, data interface{}) (ret template.HTML, err error
 }
 
 func index(w http.ResponseWriter, r *http.Request) {
-	questions := models.LoadQuestions(models.NewUniqueID())
+	questions := questionService.LoadQuestions(models.NewUniqueID())
 	render(w, pageModel{"index", "Index", questions})
 }
 
@@ -52,8 +53,14 @@ func render(w http.ResponseWriter, p pageModel) {
 	tpl.ExecuteTemplate(w, "master", p)
 }
 
+// QuestionService defines questions interface
+type QuestionService interface {
+	LoadQuestions(userID models.UniqueID) []models.Question
+}
+
 //Blog returns a new blog
-func Blog(fp common.FileProvider) http.Handler {
+func Blog(qs QuestionService, fp common.FileProvider) http.Handler {
+	questionService = qs
 	for _, t := range fp.List() {
 		if strings.HasSuffix(t, ".gohtml") {
 			tpl.Parse(fp.String(t))
