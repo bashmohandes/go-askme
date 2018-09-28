@@ -9,6 +9,7 @@ import (
 	"github.com/julienschmidt/httprouter"
 
 	"github.com/bashmohandes/go-askme/internal/domain"
+	"github.com/bashmohandes/go-askme/internal/shared"
 )
 
 type pageModel struct {
@@ -51,17 +52,11 @@ func render(w http.ResponseWriter, p pageModel) {
 	tpl.ExecuteTemplate(w, "master", p)
 }
 
-// TemplateFetcher fetches template by name
-type TemplateFetcher interface {
-	List() []string
-	String(name string) string
-}
-
 //Blog returns a new blog
-func Blog(fetcher TemplateFetcher) http.Handler {
-	for _, t := range fetcher.List() {
+func Blog(fp common.FileProvider) http.Handler {
+	for _, t := range fp.List() {
 		if strings.HasSuffix(t, ".gohtml") {
-			tpl.Parse(fetcher.String(t))
+			tpl.Parse(fp.String(t))
 		}
 	}
 	mux := httprouter.New()
