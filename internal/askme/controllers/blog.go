@@ -7,7 +7,7 @@ import (
 
 	"github.com/julienschmidt/httprouter"
 
-	"github.com/bashmohandes/go-askme/internal/askme/models"
+	"github.com/bashmohandes/go-askme/internal/domain"
 )
 
 type pageModel struct {
@@ -35,7 +35,7 @@ func renderTemplate(name string, data interface{}) (ret template.HTML, err error
 }
 
 func index(w http.ResponseWriter, r *http.Request) {
-	questions := models.LoadQuestions("Bashmohandes")
+	questions := models.LoadQuestions(models.NewUniqueID())
 	render(w, pageModel{"index", "Index", questions})
 }
 
@@ -56,6 +56,6 @@ func Blog() http.Handler {
 	mux := httprouter.New()
 	mux.HandlerFunc("GET", "/", index)
 	mux.HandlerFunc("GET", "/me", me)
-	mux.HandlerFunc("GET", "/:userid/top", topUserAnswers)
+	mux.HandlerFunc("GET", "/users/:userid/top", topUserAnswers)
 	return mux
 }
