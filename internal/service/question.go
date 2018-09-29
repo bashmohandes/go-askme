@@ -1,20 +1,23 @@
 package service
 
-import "github.com/bashmohandes/go-askme/internal/domain"
+import (
+	"github.com/bashmohandes/go-askme/internal/domain"
+	"github.com/bashmohandes/go-askme/internal/repository"
+)
 
 // QuestionService type
 type QuestionService struct {
-	questionRepo models.QuestionRepository
+	questionRepo repository.QuestionRepository
 }
 
 // NewQuestionService creates a new service
-func NewQuestionService(repo models.QuestionRepository) *QuestionService {
+func NewQuestionService(repo repository.QuestionRepository) *QuestionService {
 	return &QuestionService{
 		questionRepo: repo,
 	}
 }
 
 // LoadQuestions load questions model
-func (svc *QuestionService) LoadQuestions(userID models.UniqueID) []models.Question {
+func (svc *QuestionService) LoadQuestions(userID models.UniqueID) []*models.Question {
 	return svc.questionRepo.LoadQuestions(userID)
 }

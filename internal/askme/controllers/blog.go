@@ -55,7 +55,7 @@ func render(w http.ResponseWriter, p pageModel) {
 
 // QuestionService defines questions interface
 type QuestionService interface {
-	LoadQuestions(userID models.UniqueID) []models.Question
+	LoadQuestions(userID models.UniqueID) []*models.Question
 }
 
 //Blog returns a new blog

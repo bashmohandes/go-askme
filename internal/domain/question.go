@@ -6,8 +6,3 @@ type Question struct {
 	Text     string
 	AnswerID UniqueID
 }
-
-// QuestionRepository interface
-type QuestionRepository interface {
-	LoadQuestions(user UniqueID) []Question
-}

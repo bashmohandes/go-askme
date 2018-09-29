@@ -18,7 +18,7 @@ type Entity struct {
 // UserEntity base
 type UserEntity struct {
 	Entity
-	CreatedBy User
+	CreatedBy *User
 }
 
 // NewUniqueID generates new UniqueID

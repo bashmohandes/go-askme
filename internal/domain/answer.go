@@ -7,8 +7,3 @@ type Answer struct {
 	Likes      uint
 	QuestionID UniqueID
 }
-
-// AnswerRepository represents the basic answer repo functionality
-type AnswerRepository interface {
-	LoadAnswers(userID UniqueID) []Answer
-}
