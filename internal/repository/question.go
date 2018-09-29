@@ -6,11 +6,11 @@ import (
 	"github.com/bashmohandes/go-askme/internal/domain"
 )
 
-type repo struct {
+type questionsRepo struct {
 }
 
 // LoadQuestions loads the specified user's set of questions
-func (r *repo) LoadQuestions(userID models.UniqueID) []models.Question {
+func (r *questionsRepo) LoadQuestions(userID models.UniqueID) []models.Question {
 	result := []models.Question{
 		models.Question{
 			UserEntity: models.UserEntity{
@@ -53,5 +53,5 @@ func (r *repo) LoadQuestions(userID models.UniqueID) []models.Question {
 
 // NewQuestionRepository creates a new repo object
 func NewQuestionRepository() models.QuestionRepository {
-	return &repo{}
+	return &questionsRepo{}
 }

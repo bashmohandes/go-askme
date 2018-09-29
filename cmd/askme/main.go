@@ -2,7 +2,7 @@ package main
 
 import (
 	"github.com/bashmohandes/go-askme/internal/askme"
-	"github.com/bashmohandes/go-askme/internal/data"
+	"github.com/bashmohandes/go-askme/internal/repository"
 	"github.com/bashmohandes/go-askme/internal/service"
 	"github.com/bashmohandes/go-askme/internal/shared"
 	"github.com/gobuffalo/packr"
@@ -11,16 +11,8 @@ import (
 
 func main() {
 	container := dig.New()
-
-	container.Provide(func() *askme.Config {
-		return &askme.Config{
-			Assets: "../../internal/askme/public",
-			Port:   8080,
-		}
-	})
-	container.Provide(func(config *askme.Config) common.FileProvider {
-		return packr.NewBox(config.Assets)
-	})
+	container.Provide(newConfig)
+	container.Provide(newFileProvider)
 	container.Provide(askme.NewServer)
 	container.Provide(repository.NewQuestionRepository)
 	container.Provide(repository.NewAnswerRepository)
@@ -31,5 +23,16 @@ func main() {
 
 	if err != nil {
 		panic(err)
+	}
+}
+
+func newFileProvider(config *askme.Config) common.FileProvider {
+	return packr.NewBox(config.Assets)
+}
+
+func newConfig() *askme.Config {
+	return &askme.Config{
+		Assets: "../../internal/askme/public",
+		Port:   8080,
 	}
 }
