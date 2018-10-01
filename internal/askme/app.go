@@ -14,7 +14,7 @@ import (
 type Server struct {
 	config          *Config
 	fileProvider    common.FileProvider
-	questionService *service.QuestionService
+	questionService service.QuestionService
 }
 
 // Config configuration
@@ -36,7 +36,7 @@ func (server *Server) Start() {
 func NewServer(
 	config *Config,
 	fileProvider common.FileProvider,
-	questionService *service.QuestionService) *Server {
+	questionService service.QuestionService) *Server {
 	return &Server{
 		config:          config,
 		fileProvider:    fileProvider,

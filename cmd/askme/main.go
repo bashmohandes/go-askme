@@ -3,7 +3,7 @@ package main
 import (
 	"github.com/bashmohandes/go-askme/internal/askme"
 	"github.com/bashmohandes/go-askme/internal/repository/inmemory"
-	"github.com/bashmohandes/go-askme/internal/service"
+	"github.com/bashmohandes/go-askme/internal/service/default"
 	"github.com/bashmohandes/go-askme/internal/shared"
 	"github.com/gobuffalo/packr"
 	"go.uber.org/dig"

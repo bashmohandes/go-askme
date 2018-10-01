@@ -21,8 +21,9 @@ func (user *User) Answer(q *Question, answer string) *Answer {
 			},
 			CreatedBy: user,
 		},
-		Likes: 0,
-		Text:  answer,
+		Likes:      0,
+		Text:       answer,
+		QuestionID: q.ID,
 	}
 }
 
