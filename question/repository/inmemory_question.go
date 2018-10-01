@@ -3,9 +3,8 @@ package repository
 import (
 	"time"
 
-	"github.com/bashmohandes/go-askme/internal/repository"
-
-	"github.com/bashmohandes/go-askme/internal/domain"
+	"github.com/bashmohandes/go-askme/model"
+	"github.com/bashmohandes/go-askme/question"
 )
 
 // InMemoryQuestionsRepo is a test repo that saves data in memory
@@ -61,8 +60,8 @@ func (r *questionsRepo) Save(q *models.Question) *models.Question {
 	return q
 }
 
-// NewQuestionRepository creates a new repo object
-func NewQuestionRepository() repository.QuestionRepository {
+// NewRepository creates a new repo object
+func NewRepository() question.Repository {
 	return &questionsRepo{
 		data: make(map[models.UniqueID]*models.Question),
 	}

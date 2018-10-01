@@ -1,8 +1,8 @@
 package repository
 
 import (
-	"github.com/bashmohandes/go-askme/internal/domain"
-	"github.com/bashmohandes/go-askme/internal/repository"
+	"github.com/bashmohandes/go-askme/answer"
+	"github.com/bashmohandes/go-askme/model"
 )
 
 type answersRepo struct{}
@@ -17,7 +17,7 @@ func (r *answersRepo) AddLike(answer *models.Answer, user *models.User) uint {
 	return answer.Likes + 1
 }
 
-// NewAnswerRepository creates a new repo object
-func NewAnswerRepository() repository.AnswerRepository {
+// NewRepository creates a new repo object
+func NewRepository() answer.Repository {
 	return &answersRepo{}
 }

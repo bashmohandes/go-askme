@@ -1,10 +1,11 @@
 package main
 
 import (
-	"github.com/bashmohandes/go-askme/internal/askme"
-	"github.com/bashmohandes/go-askme/internal/repository/inmemory"
-	"github.com/bashmohandes/go-askme/internal/service/default"
-	"github.com/bashmohandes/go-askme/internal/shared"
+	answerRepo "github.com/bashmohandes/go-askme/answer/repository"
+	questionRepo "github.com/bashmohandes/go-askme/question/repository"
+	"github.com/bashmohandes/go-askme/shared"
+	"github.com/bashmohandes/go-askme/user/usecase"
+	"github.com/bashmohandes/go-askme/web/askme"
 	"github.com/gobuffalo/packr"
 	"go.uber.org/dig"
 )
@@ -14,9 +15,9 @@ func main() {
 	container.Provide(newConfig)
 	container.Provide(newFileProvider)
 	container.Provide(askme.NewServer)
-	container.Provide(repository.NewQuestionRepository)
-	container.Provide(repository.NewAnswerRepository)
-	container.Provide(service.NewQuestionService)
+	container.Provide(questionRepo.NewRepository)
+	container.Provide(answerRepo.NewRepository)
+	container.Provide(usecase.NewUsecase)
 	err := container.Invoke(func(server *askme.Server) {
 		server.Start()
 	})
@@ -32,7 +33,7 @@ func newFileProvider(config *askme.Config) common.FileProvider {
 
 func newConfig() *askme.Config {
 	return &askme.Config{
-		Assets: "../../internal/askme/public",
+		Assets: "../../web/askme/public",
 		Port:   8080,
 	}
 }

@@ -5,16 +5,16 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/bashmohandes/go-askme/internal/askme/controllers"
-	"github.com/bashmohandes/go-askme/internal/service"
-	"github.com/bashmohandes/go-askme/internal/shared"
+	"github.com/bashmohandes/go-askme/shared"
+	"github.com/bashmohandes/go-askme/user"
+	"github.com/bashmohandes/go-askme/web/askme/controllers"
 )
 
 // Server represents the AskMe application server
 type Server struct {
-	config          *Config
-	fileProvider    common.FileProvider
-	questionService service.QuestionService
+	config       *Config
+	fileProvider common.FileProvider
+	scenario     user.Usecase
 }
 
 // Config configuration
@@ -26,7 +26,7 @@ type Config struct {
 
 //Start method starts the AskMe App
 func (server *Server) Start() {
-	b := controllers.Blog(server.questionService, server.fileProvider)
+	b := controllers.Blog(server.scenario, server.fileProvider)
 	fmt.Println("Hello!")
 	fmt.Printf("Listening on port %d\n", server.config.Port)
 	log.Fatalln(http.ListenAndServe(fmt.Sprintf(":%d", server.config.Port), b))
@@ -36,10 +36,10 @@ func (server *Server) Start() {
 func NewServer(
 	config *Config,
 	fileProvider common.FileProvider,
-	questionService service.QuestionService) *Server {
+	scenario user.Usecase) *Server {
 	return &Server{
-		config:          config,
-		fileProvider:    fileProvider,
-		questionService: questionService,
+		config:       config,
+		fileProvider: fileProvider,
+		scenario:     scenario,
 	}
 }

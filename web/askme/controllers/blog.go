@@ -6,10 +6,10 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/bashmohandes/go-askme/model"
+	"github.com/bashmohandes/go-askme/shared"
+	"github.com/bashmohandes/go-askme/user"
 	"github.com/julienschmidt/httprouter"
-
-	"github.com/bashmohandes/go-askme/internal/domain"
-	"github.com/bashmohandes/go-askme/internal/shared"
 )
 
 type pageModel struct {
@@ -19,7 +19,7 @@ type pageModel struct {
 }
 
 var tpl *template.Template
-var questionService QuestionService
+var scenario user.Usecase
 
 //Blog represents the main app model
 func init() {
@@ -37,7 +37,7 @@ func renderTemplate(name string, data interface{}) (ret template.HTML, err error
 }
 
 func index(w http.ResponseWriter, r *http.Request) {
-	questions := questionService.LoadQuestions(models.NewUniqueID())
+	questions := scenario.FetchUnansweredQuestions(models.NewUniqueID())
 	render(w, pageModel{"index", "Index", questions})
 }
 
@@ -59,8 +59,8 @@ type QuestionService interface {
 }
 
 //Blog returns a new blog
-func Blog(qs QuestionService, fp common.FileProvider) http.Handler {
-	questionService = qs
+func Blog(sc user.Usecase, fp common.FileProvider) http.Handler {
+	scenario = sc
 	for _, t := range fp.List() {
 		if strings.HasSuffix(t, ".gohtml") {
 			tpl.Parse(fp.String(t))
