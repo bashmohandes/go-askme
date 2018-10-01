@@ -26,6 +26,12 @@ func (svc *userUsecase) FetchUnansweredQuestions(userID models.UniqueID) []*mode
 }
 
 // Saves question
-func (svc *userUsecase) Ask(question *models.Question) *models.Question {
-	return svc.questionRepo.Save(question)
+func (svc *userUsecase) Ask(from *models.User, to *models.User, question string) *models.Question {
+	q := from.Ask(to, question)
+	return svc.questionRepo.Save(q)
+}
+
+// Likes question
+func (svc *userUsecase) Like(user *models.User, answer *models.Answer) uint {
+	return svc.answerRepo.AddLike(answer, user)
 }

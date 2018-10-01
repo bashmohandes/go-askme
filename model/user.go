@@ -40,9 +40,3 @@ func (user *User) Ask(other *User, question string) *Question {
 		Text: question,
 	}
 }
-
-// Likes records a user liking an answer, and returns the new number of likes
-func (user *User) Likes(answer *Answer) uint {
-	answer.Likes++
-	return answer.Likes
-}

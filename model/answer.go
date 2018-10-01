@@ -6,4 +6,5 @@ type Answer struct {
 	Text       string
 	Likes      uint
 	QuestionID UniqueID
+	likedBy    []UniqueID
 }
