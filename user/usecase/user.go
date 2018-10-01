@@ -22,7 +22,7 @@ func NewUsecase(qRepo question.Repository, aRepo answer.Repository) user.Usecase
 
 // LoadQuestions load questions model
 func (svc *userUsecase) FetchUnansweredQuestions(userID models.UniqueID) []*models.Question {
-	return svc.questionRepo.LoadQuestions(userID)
+	return svc.questionRepo.LoadUnansweredQuestions(userID)
 }
 
 // Saves question
@@ -31,7 +31,19 @@ func (svc *userUsecase) Ask(from *models.User, to *models.User, question string)
 	return svc.questionRepo.Save(q)
 }
 
-// Likes question
+// Likes a question
 func (svc *userUsecase) Like(user *models.User, answer *models.Answer) uint {
-	return svc.answerRepo.AddLike(answer, user)
+	svc.answerRepo.AddLike(answer, user)
+	return svc.answerRepo.GetLikesCount(answer)
+}
+
+// Unlikes a question
+func (svc *userUsecase) Unlike(user *models.User, answer *models.Answer) uint {
+	svc.answerRepo.RemoveLike(answer, user)
+	return svc.answerRepo.GetLikesCount(answer)
+}
+
+func (svc *userUsecase) Answer(user *models.User, question *models.Question, answer string) *models.Answer {
+	a := user.Answer(question, answer)
+	return svc.answerRepo.Save(a)
 }

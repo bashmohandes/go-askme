@@ -12,8 +12,8 @@ type questionsRepo struct {
 	data map[models.UniqueID]*models.Question
 }
 
-// LoadQuestions loads the specified user's set of questions
-func (r *questionsRepo) LoadQuestions(userID models.UniqueID) []*models.Question {
+// LoadUnansweredQuestions loads the specified user's set of questions
+func (r *questionsRepo) LoadUnansweredQuestions(userID models.UniqueID) []*models.Question {
 	result := []*models.Question{
 		&models.Question{
 			UserEntity: models.UserEntity{

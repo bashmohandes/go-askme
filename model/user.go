@@ -38,5 +38,6 @@ func (user *User) Ask(other *User, question string) *Question {
 			CreatedBy: user,
 		},
 		Text: question,
+		To:   other,
 	}
 }
