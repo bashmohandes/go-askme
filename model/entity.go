@@ -9,6 +9,9 @@ import (
 // UniqueID type
 type UniqueID uuid.UUID
 
+// EmptyUniqueID represents empty UniqueID
+var EmptyUniqueID = UniqueID(uuid.Nil)
+
 // Entity base
 type Entity struct {
 	ID        UniqueID
@@ -24,4 +27,8 @@ type UserEntity struct {
 // NewUniqueID generates new UniqueID
 func NewUniqueID() UniqueID {
 	return UniqueID(uuid.New())
+}
+
+func (u UniqueID) String() string {
+	return uuid.UUID(u).String()
 }

@@ -41,3 +41,15 @@ func (user *User) Ask(other *User, question string) *Question {
 		To:   other,
 	}
 }
+
+// NewUser creates a new user
+func NewUser(email string, name string) *User {
+	return &User{
+		Entity: Entity{
+			ID:        NewUniqueID(),
+			CreatedOn: time.Now(),
+		},
+		Email: email,
+		Name:  name,
+	}
+}
