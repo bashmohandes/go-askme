@@ -40,9 +40,8 @@ func (r *answersRepo) GetLikesCount(answer *models.Answer) uint {
 	return uint(len(r.data[answer.ID].LikedBy))
 }
 
-func (r *answersRepo) Save(answer *models.Answer) *models.Answer {
+func (r *answersRepo) Add(answer *models.Answer) {
 	r.data[answer.ID] = answer
-	return answer
 }
 
 // NewRepository creates a new repo object

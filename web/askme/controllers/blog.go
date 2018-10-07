@@ -20,7 +20,7 @@ type pageModel struct {
 }
 
 var tpl *template.Template
-var scenario user.Usecase
+var scenario user.AsksUsecase
 
 //Blog represents the main app model
 func init() {
@@ -63,7 +63,7 @@ type QuestionService interface {
 }
 
 //Blog returns a new blog
-func Blog(sc user.Usecase, fp shared.FileProvider) http.Handler {
+func Blog(sc user.AsksUsecase, fp shared.FileProvider) http.Handler {
 	scenario = sc
 	for _, t := range fp.List() {
 		if strings.HasSuffix(t, ".gohtml") {

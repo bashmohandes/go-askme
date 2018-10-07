@@ -8,5 +8,5 @@ type Repository interface {
 	AddLike(answer *models.Answer, user *models.User)
 	RemoveLike(answer *models.Answer, user *models.User)
 	GetLikesCount(answer *models.Answer) uint
-	Save(answer *models.Answer) *models.Answer
+	Add(answer *models.Answer)
 }

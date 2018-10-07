@@ -27,18 +27,30 @@ type FeedItem struct {
 	User       string
 }
 
-// Usecase type
-type Usecase interface {
-	FetchUnansweredQuestions(userID models.UniqueID) []*models.Question
+// AsksUsecase type
+type AsksUsecase interface {
 	Ask(from *models.User, to *models.User, question string) *models.Question
 	Like(user *models.User, answer *models.Answer) uint
 	Unlike(user *models.User, answer *models.Answer) uint
-	Answer(user *models.User, question *models.Question, answer string) *models.Answer
 	LoadUserFeed(user *models.User) *Feed
 }
 
-// NewUsecase creates a new service
-func NewUsecase(qRepo question.Repository, aRepo answer.Repository) Usecase {
+// AnswersUsecase for the registered user
+type AnswersUsecase interface {
+	FetchUnansweredQuestions(userID models.UniqueID) []*models.Question
+	Answer(user *models.User, question *models.Question, answer string) *models.Answer
+}
+
+// NewAsksUsecase creates a new service
+func NewAsksUsecase(qRepo question.Repository, aRepo answer.Repository) AsksUsecase {
+	return &userUsecase{
+		questionRepo: qRepo,
+		answerRepo:   aRepo,
+	}
+}
+
+// NewAnswersUsecase creates a new service
+func NewAnswersUsecase(qRepo question.Repository, aRepo answer.Repository) AnswersUsecase {
 	return &userUsecase{
 		questionRepo: qRepo,
 		answerRepo:   aRepo,
@@ -53,7 +65,8 @@ func (svc *userUsecase) FetchUnansweredQuestions(userID models.UniqueID) []*mode
 // Saves question
 func (svc *userUsecase) Ask(from *models.User, to *models.User, question string) *models.Question {
 	q := from.Ask(to, question)
-	return svc.questionRepo.Save(q)
+	svc.questionRepo.Add(q)
+	return q
 }
 
 // Likes a question
@@ -70,7 +83,8 @@ func (svc *userUsecase) Unlike(user *models.User, answer *models.Answer) uint {
 
 func (svc *userUsecase) Answer(user *models.User, question *models.Question, answer string) *models.Answer {
 	a := user.Answer(question, answer)
-	return svc.answerRepo.Save(a)
+	svc.answerRepo.Add(a)
+	return a
 }
 
 func (svc *userUsecase) LoadUserFeed(user *models.User) *Feed {

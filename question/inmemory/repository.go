@@ -55,9 +55,8 @@ func (r *questionsRepo) LoadUnansweredQuestions(userID models.UniqueID) []*model
 }
 
 // Save the question specified
-func (r *questionsRepo) Save(q *models.Question) *models.Question {
+func (r *questionsRepo) Add(q *models.Question) {
 	r.data[q.ID] = q
-	return q
 }
 
 // NewRepository creates a new repo object

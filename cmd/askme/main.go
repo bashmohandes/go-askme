@@ -17,7 +17,8 @@ func main() {
 	container.Provide(askme.NewServer)
 	container.Provide(question.NewRepository)
 	container.Provide(answer.NewRepository)
-	container.Provide(user.NewUsecase)
+	container.Provide(user.NewAsksUsecase)
+	container.Provide(user.NewAnswersUsecase)
 	err := container.Invoke(func(server *askme.Server) {
 		server.Start()
 	})

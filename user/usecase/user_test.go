@@ -9,7 +9,7 @@ import (
 )
 
 func TestAsk(t *testing.T) {
-	sut := NewUsecase(question.NewRepository(), answer.NewRepository())
+	sut := NewAsksUsecase(question.NewRepository(), answer.NewRepository())
 	from := &models.User{}
 	from.ID = models.NewUniqueID()
 	to := &models.User{}
@@ -23,29 +23,30 @@ func TestAsk(t *testing.T) {
 }
 
 func TestLike(t *testing.T) {
-	sut := NewUsecase(question.NewRepository(), answer.NewRepository())
+	qRepo, aRepo := question.NewRepository(), answer.NewRepository()
+	userAsks, userAnswers := NewAsksUsecase(qRepo, aRepo), NewAnswersUsecase(qRepo, aRepo)
 	user1 := &models.User{}
 	user1.ID = models.NewUniqueID()
 	user2 := &models.User{}
 	user2.ID = models.NewUniqueID()
 	to := &models.User{}
 	to.ID = models.NewUniqueID()
-	question := sut.Ask(user1, to, "test question")
-	answer := sut.Answer(user1, question, "test answer")
-	count := sut.Like(user1, answer)
+	question := userAsks.Ask(user1, to, "test question")
+	answer := userAnswers.Answer(user1, question, "test answer")
+	count := userAsks.Like(user1, answer)
 
 	if count != 1 {
 		t.Fail()
 		t.Errorf("Expected 1, Actual %v", count)
 	}
 
-	count = sut.Like(user2, answer)
+	count = userAsks.Like(user2, answer)
 	if count != 2 {
 		t.Fail()
 		t.Errorf("Expected 2, Actual %v", count)
 	}
 
-	count = sut.Like(user2, answer)
+	count = userAsks.Like(user2, answer)
 	if count != 2 {
 		t.Fail()
 		t.Errorf("Expected 2, Actual %v", count)
@@ -53,29 +54,30 @@ func TestLike(t *testing.T) {
 }
 
 func TestUnlike(t *testing.T) {
-	sut := NewUsecase(question.NewRepository(), answer.NewRepository())
+	qRepo, aRepo := question.NewRepository(), answer.NewRepository()
+	userAsks, userAnswers := NewAsksUsecase(qRepo, aRepo), NewAnswersUsecase(qRepo, aRepo)
 	user1 := &models.User{}
 	user1.ID = models.NewUniqueID()
 	user2 := &models.User{}
 	user2.ID = models.NewUniqueID()
 	to := &models.User{}
 	to.ID = models.NewUniqueID()
-	question := sut.Ask(user1, to, "test question")
-	answer := sut.Answer(user1, question, "test answer")
-	count := sut.Like(user1, answer)
+	question := userAsks.Ask(user1, to, "test question")
+	answer := userAnswers.Answer(user1, question, "test answer")
+	count := userAsks.Like(user1, answer)
 
 	if count != 1 {
 		t.Fail()
 		t.Errorf("Expected 1, Actual %v", count)
 	}
 
-	count = sut.Like(user2, answer)
+	count = userAsks.Like(user2, answer)
 	if count != 2 {
 		t.Fail()
 		t.Errorf("Expected 2, Actual %v", count)
 	}
 
-	count = sut.Unlike(user1, answer)
+	count = userAsks.Unlike(user1, answer)
 	if count != 1 {
 		t.Fail()
 		t.Errorf("Expected 1, Actual %v", count)
