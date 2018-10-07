@@ -13,7 +13,7 @@ import (
 // Server represents the AskMe application server
 type Server struct {
 	config       *Config
-	fileProvider common.FileProvider
+	fileProvider shared.FileProvider
 	scenario     user.Usecase
 }
 
@@ -35,7 +35,7 @@ func (server *Server) Start() {
 // NewServer Creates a new AskMe app server
 func NewServer(
 	config *Config,
-	fileProvider common.FileProvider,
+	fileProvider shared.FileProvider,
 	scenario user.Usecase) *Server {
 	return &Server{
 		config:       config,

@@ -63,7 +63,7 @@ type QuestionService interface {
 }
 
 //Blog returns a new blog
-func Blog(sc user.Usecase, fp common.FileProvider) http.Handler {
+func Blog(sc user.Usecase, fp shared.FileProvider) http.Handler {
 	scenario = sc
 	for _, t := range fp.List() {
 		if strings.HasSuffix(t, ".gohtml") {

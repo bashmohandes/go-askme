@@ -27,7 +27,7 @@ func main() {
 	}
 }
 
-func newFileProvider(config *askme.Config) common.FileProvider {
+func newFileProvider(config *askme.Config) shared.FileProvider {
 	return packr.NewBox(config.Assets)
 }
 
