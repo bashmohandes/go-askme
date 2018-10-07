@@ -1,8 +1,8 @@
 package main
 
 import (
-	answerRepo "github.com/bashmohandes/go-askme/answer/repository"
-	questionRepo "github.com/bashmohandes/go-askme/question/repository"
+	"github.com/bashmohandes/go-askme/answer/inmemory"
+	"github.com/bashmohandes/go-askme/question/inmemory"
 	"github.com/bashmohandes/go-askme/shared"
 	"github.com/bashmohandes/go-askme/user/usecase"
 	"github.com/bashmohandes/go-askme/web/askme"
@@ -15,9 +15,9 @@ func main() {
 	container.Provide(newConfig)
 	container.Provide(newFileProvider)
 	container.Provide(askme.NewServer)
-	container.Provide(questionRepo.NewRepository)
-	container.Provide(answerRepo.NewRepository)
-	container.Provide(usecase.NewUsecase)
+	container.Provide(question.NewRepository)
+	container.Provide(answer.NewRepository)
+	container.Provide(user.NewUsecase)
 	err := container.Invoke(func(server *askme.Server) {
 		server.Start()
 	})

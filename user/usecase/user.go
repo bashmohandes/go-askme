@@ -1,10 +1,9 @@
-package usecase
+package user
 
 import (
 	"github.com/bashmohandes/go-askme/answer"
 	"github.com/bashmohandes/go-askme/model"
 	"github.com/bashmohandes/go-askme/question"
-	"github.com/bashmohandes/go-askme/user"
 )
 
 type userUsecase struct {
@@ -12,8 +11,17 @@ type userUsecase struct {
 	answerRepo   answer.Repository
 }
 
+// Usecase type
+type Usecase interface {
+	FetchUnansweredQuestions(userID models.UniqueID) []*models.Question
+	Ask(from *models.User, to *models.User, question string) *models.Question
+	Like(user *models.User, answer *models.Answer) uint
+	Unlike(user *models.User, answer *models.Answer) uint
+	Answer(user *models.User, question *models.Question, answer string) *models.Answer
+}
+
 // NewUsecase creates a new service
-func NewUsecase(qRepo question.Repository, aRepo answer.Repository) user.Usecase {
+func NewUsecase(qRepo question.Repository, aRepo answer.Repository) Usecase {
 	return &userUsecase{
 		questionRepo: qRepo,
 		answerRepo:   aRepo,

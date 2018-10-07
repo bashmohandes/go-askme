@@ -2,7 +2,44 @@ package models
 
 import (
 	"time"
+
+	"github.com/google/uuid"
 )
+
+// UniqueID type
+type UniqueID uuid.UUID
+
+// EmptyUniqueID represents empty UniqueID
+var EmptyUniqueID = UniqueID(uuid.Nil)
+
+// Entity base
+type Entity struct {
+	ID        UniqueID
+	CreatedOn time.Time
+}
+
+// UserEntity base
+type UserEntity struct {
+	Entity
+	CreatedBy *User
+}
+
+//Answer by me
+type Answer struct {
+	UserEntity
+	Text       string
+	Likes      uint
+	QuestionID UniqueID
+	LikedBy    map[UniqueID]bool
+}
+
+//Question asked by users
+type Question struct {
+	UserEntity
+	To       *User
+	Text     string
+	AnswerID *Answer
+}
 
 // User type
 type User struct {
@@ -52,4 +89,9 @@ func NewUser(email string, name string) *User {
 		Email: email,
 		Name:  name,
 	}
+}
+
+// NewUniqueID generates new UniqueID
+func NewUniqueID() UniqueID {
+	return UniqueID(uuid.New())
 }

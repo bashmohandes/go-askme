@@ -1,15 +1,15 @@
-package usecase
+package user
 
 import (
 	"testing"
 
-	answerRepo "github.com/bashmohandes/go-askme/answer/repository"
+	"github.com/bashmohandes/go-askme/answer/inmemory"
 	"github.com/bashmohandes/go-askme/model"
-	questionRepo "github.com/bashmohandes/go-askme/question/repository"
+	"github.com/bashmohandes/go-askme/question/inmemory"
 )
 
 func TestAsk(t *testing.T) {
-	sut := NewUsecase(questionRepo.NewRepository(), answerRepo.NewRepository())
+	sut := NewUsecase(question.NewRepository(), answer.NewRepository())
 	from := &models.User{}
 	from.ID = models.NewUniqueID()
 	to := &models.User{}
@@ -23,7 +23,7 @@ func TestAsk(t *testing.T) {
 }
 
 func TestLike(t *testing.T) {
-	sut := NewUsecase(questionRepo.NewRepository(), answerRepo.NewRepository())
+	sut := NewUsecase(question.NewRepository(), answer.NewRepository())
 	user1 := &models.User{}
 	user1.ID = models.NewUniqueID()
 	user2 := &models.User{}
@@ -53,7 +53,7 @@ func TestLike(t *testing.T) {
 }
 
 func TestUnlike(t *testing.T) {
-	sut := NewUsecase(questionRepo.NewRepository(), answerRepo.NewRepository())
+	sut := NewUsecase(question.NewRepository(), answer.NewRepository())
 	user1 := &models.User{}
 	user1.ID = models.NewUniqueID()
 	user2 := &models.User{}

@@ -40,7 +40,7 @@ func TestAskUserQuestion(t *testing.T) {
 	}
 
 	if question.CreatedBy.ID != user1.ID {
-		t.Errorf("Wrong asker %s!= %s", question.CreatedBy.ID.String(), user1.ID.String())
+		t.Errorf("Wrong asker %s!= %s", question.CreatedBy.ID, user1.ID)
 		t.Fail()
 	}
 

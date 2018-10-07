@@ -8,7 +8,7 @@ import (
 
 	"github.com/bashmohandes/go-askme/model"
 	"github.com/bashmohandes/go-askme/shared"
-	"github.com/bashmohandes/go-askme/user"
+	"github.com/bashmohandes/go-askme/user/usecase"
 	"github.com/julienschmidt/httprouter"
 )
 
