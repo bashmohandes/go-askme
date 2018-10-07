@@ -14,7 +14,7 @@ import (
 type Server struct {
 	config       *Config
 	fileProvider shared.FileProvider
-	scenario     user.Usecase
+	asksScenario user.AsksUsecase
 }
 
 // Config configuration
@@ -26,7 +26,7 @@ type Config struct {
 
 //Start method starts the AskMe App
 func (server *Server) Start() {
-	b := controllers.Blog(server.scenario, server.fileProvider)
+	b := controllers.Blog(server.asksScenario, server.fileProvider)
 	fmt.Println("Hello!")
 	fmt.Printf("Listening on port %d\n", server.config.Port)
 	log.Fatalln(http.ListenAndServe(fmt.Sprintf(":%d", server.config.Port), b))
@@ -36,10 +36,10 @@ func (server *Server) Start() {
 func NewServer(
 	config *Config,
 	fileProvider shared.FileProvider,
-	scenario user.Usecase) *Server {
+	scenario user.AsksUsecase) *Server {
 	return &Server{
 		config:       config,
 		fileProvider: fileProvider,
-		scenario:     scenario,
+		asksScenario: scenario,
 	}
 }
