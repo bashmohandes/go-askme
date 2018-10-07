@@ -1,10 +1,24 @@
 {{define "index"}}
-<h1>Hello INDEX</h1>
 <div>
-    <ul>
-    {{range .Data}}
-        <li>{{.Text}}</li>
+    <form class="form">
+        <div class="form-group">
+            <p>
+                <label for="exampleFormControlTextarea1">Your Question?</label>
+                <textarea class="form-control form-control-lg" id="exampleFormControlTextarea1" rows="2"></textarea>
+            </p>
+            <p class="text-right">
+                <button class="btn btn-primary btn-lg" type="submit">Ask Away!</button>
+            </p>
+            <hr class="mb-4">
+        </div>
+    </form>
+    <div>    
+    {{range .Data.Items}}
+        <div class="col-md-4">
+            <h2>{{.Question}}</h2>
+            <p>{{.Answer}}</p>
+        </div>
     {{end}}
-    </ul>
+    </div>
 </div>
 {{end}}

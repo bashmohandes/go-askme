@@ -3,6 +3,7 @@ package controllers
 import (
 	"bytes"
 	"html/template"
+	"log"
 	"net/http"
 	"strings"
 
@@ -37,7 +38,7 @@ func renderTemplate(name string, data interface{}) (ret template.HTML, err error
 }
 
 func index(w http.ResponseWriter, r *http.Request) {
-	questions := scenario.FetchUnansweredQuestions(models.NewUniqueID())
+	questions := scenario.LoadUserFeed(models.NewUser("Visitor@hotmail.com", "Visitor Visiting"))
 	render(w, pageModel{"index", "Index", questions})
 }
 
@@ -50,7 +51,10 @@ func topUserAnswers(w http.ResponseWriter, r *http.Request) {
 }
 
 func render(w http.ResponseWriter, p pageModel) {
-	tpl.ExecuteTemplate(w, "master", p)
+	err := tpl.ExecuteTemplate(w, "master", p)
+	if err != nil {
+		log.Fatalln(err.Error())
+	}
 }
 
 // QuestionService defines questions interface
