@@ -12,9 +12,20 @@ This is not meant to be a production ready product _at least initially_, it is m
 The code base follows Uncle Bob's [Clean Architecture](https://8thlight.com/blog/uncle-bob/2012/08/13/the-clean-architecture.html) principals, where the code is broken down to
 
 1. Entities (model folder)
-2. Repositories
-3. Usecases
-4. Delivery
+2. Components
+    1. Questions
+    2. Answers
+    3. Users
+3. Shared
+
+### Entities
+The main domain models, which in our case _so far_ **Question**, **Answer**, **User** as well as base entity types and helpers, and basic domain operations on domain models using the domain ubiquitous language, like Ask, Answer, Like ... etc
+
+### Components
+Each component consists of all the basic layers needed to complete this component from top to bottom, like **Use Cases**, **Repositories**, **Tests**
+
+### Shared
+Shared is anything that can be shared, like utilities.
 
 ## Dependencies
 
