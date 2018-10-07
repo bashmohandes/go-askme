@@ -69,7 +69,7 @@ func Blog(sc user.Usecase, fp common.FileProvider) http.Handler {
 	mux := httprouter.New()
 	mux.HandlerFunc("GET", "/", index)
 	mux.HandlerFunc("GET", "/me", me)
-	mux.HandlerFunc("GET", "/users/:userid/top", topUserAnswers)
+	mux.HandlerFunc("GET", "/me/top", topUserAnswers)
 	mux.ServeFiles("/public/*filepath", fp)
 	return mux
 }
