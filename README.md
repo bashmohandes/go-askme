@@ -35,6 +35,7 @@ This is not meant to depend on any fat frameworks, especially web frameworks, al
 1. Uber's [dig](https://go.uber.org/dig) Dependency Injection framework
 2. Buffalo's [box](https://github.com/gobuffalo/packr) asset management
 3. Google's [UUID](https://github.com/google/uuid) package
+4. joho/godotenv [godotenv](https://github.com/joho/godotenv)
 
 ## Build and Run
 
