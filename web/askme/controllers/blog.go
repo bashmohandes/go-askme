@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"bytes"
+	"fmt"
 	"html/template"
 	"log"
 	"net/http"
@@ -51,6 +52,12 @@ func topUserAnswers(w http.ResponseWriter, r *http.Request) {
 	render(w, pageModel{"top", "Top Answers", nil})
 }
 
+func postQuestion(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	r.ParseForm()
+
+	fmt.Fprintf(w, "Params %v", r.FormValue("username"))
+}
+
 func render(w http.ResponseWriter, p pageModel) {
 	err := tpl.ExecuteTemplate(w, "master", p)
 	if err != nil {
@@ -76,6 +83,7 @@ func Blog(askUC user.AsksUsecase, answrUC user.AnswersUsecase, fp shared.FilePro
 	mux.HandlerFunc("GET", "/", index)
 	mux.HandlerFunc("GET", "/me", me)
 	mux.HandlerFunc("GET", "/me/top", topUserAnswers)
+	mux.POST("/question/", postQuestion)
 	mux.ServeFiles("/public/*filepath", fp)
 	return mux
 }

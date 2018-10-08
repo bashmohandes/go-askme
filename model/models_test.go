@@ -72,7 +72,7 @@ func TestAnswerQuestion(t *testing.T) {
 		t.Fail()
 	}
 
-	if answer.QuestionID != question.ID {
+	if *answer.QuestionID != question.ID {
 		t.Error("Wrong question id")
 		t.Fail()
 	}

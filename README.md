@@ -16,7 +16,8 @@ The code base follows Uncle Bob's [Clean Architecture](https://8thlight.com/blog
     1. Questions
     2. Answers
     3. Users
-3. Shared
+3. Use Cases
+4. Shared
 
 ### Entities
 The main domain models, which in our case _so far_ **Question**, **Answer**, **User** as well as base entity types and helpers, and basic domain operations on domain models using the domain ubiquitous language, like Ask, Answer, Like ... etc

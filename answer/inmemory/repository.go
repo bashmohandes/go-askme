@@ -12,8 +12,14 @@ type answersRepo struct {
 }
 
 // LoadAnswers loads the specified user's set of answers
-func (r *answersRepo) LoadAnswers(userID models.UniqueID) []models.Answer {
-	return nil
+func (r *answersRepo) LoadAnswers(userID models.UniqueID) []*models.Answer {
+	result := make([]*models.Answer, 0, len(r.data))
+	for k := range r.data {
+		if r.data[k].QuestionID != nil {
+
+		}
+	}
+	return result
 }
 
 // AddLike adds a like to the specified answer

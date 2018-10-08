@@ -1,8 +1,6 @@
 package question
 
 import (
-	"time"
-
 	"github.com/bashmohandes/go-askme/model"
 	"github.com/bashmohandes/go-askme/question"
 )
@@ -14,43 +12,12 @@ type questionsRepo struct {
 
 // LoadUnansweredQuestions loads the specified user's set of questions
 func (r *questionsRepo) LoadUnansweredQuestions(userID models.UniqueID) []*models.Question {
-	result := []*models.Question{
-		&models.Question{
-			UserEntity: models.UserEntity{
-				Entity: models.Entity{
-					CreatedOn: time.Now(),
-					ID:        models.NewUniqueID(),
-				},
-				CreatedBy: &models.User{
-					Entity: models.Entity{
-						CreatedOn: time.Now(),
-						ID:        models.NewUniqueID(),
-					},
-					Email: "Bashmohandes@live.com",
-					Name:  "Mohamed Elsherif",
-				},
-			},
-			Text: "Who Are You?",
-		},
-		&models.Question{
-			UserEntity: models.UserEntity{
-				Entity: models.Entity{
-					CreatedOn: time.Now(),
-					ID:        models.NewUniqueID(),
-				},
-				CreatedBy: &models.User{
-					Entity: models.Entity{
-						CreatedOn: time.Now(),
-						ID:        models.NewUniqueID(),
-					},
-					Email: "Bashmohandes@live.com",
-					Name:  "Mohamed Elsherif",
-				},
-			},
-			Text: "Where Are You?",
-		},
+	result := make([]*models.Question, 0, len(r.data))
+	for k := range r.data {
+		if r.data[k].AnswerID == nil {
+			result = append(result, r.data[k])
+		}
 	}
-
 	return result
 }
 

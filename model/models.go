@@ -29,7 +29,7 @@ type Answer struct {
 	UserEntity
 	Text       string
 	Likes      uint
-	QuestionID UniqueID
+	QuestionID *UniqueID
 	LikedBy    map[UniqueID]bool
 }
 
@@ -38,7 +38,7 @@ type Question struct {
 	UserEntity
 	To       *User
 	Text     string
-	AnswerID *Answer
+	AnswerID *UniqueID
 }
 
 // User type
@@ -60,7 +60,8 @@ func (user *User) Answer(q *Question, answer string) *Answer {
 		},
 		Likes:      0,
 		Text:       answer,
-		QuestionID: q.ID,
+		QuestionID: &q.ID,
+		LikedBy:    make(map[UniqueID]bool),
 	}
 }
 
