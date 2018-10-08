@@ -20,7 +20,8 @@ type pageModel struct {
 }
 
 var tpl *template.Template
-var scenario user.AsksUsecase
+var asksUserScenario user.AsksUsecase
+var answerUserScenarion user.AnswersUsecase
 
 //Blog represents the main app model
 func init() {
@@ -38,7 +39,7 @@ func renderTemplate(name string, data interface{}) (ret template.HTML, err error
 }
 
 func index(w http.ResponseWriter, r *http.Request) {
-	questions := scenario.LoadUserFeed(models.NewUser("Visitor@hotmail.com", "Visitor Visiting"))
+	questions := asksUserScenario.LoadUserFeed(models.NewUser("Visitor@hotmail.com", "Visitor Visiting"))
 	render(w, pageModel{"index", "Index", questions})
 }
 
@@ -63,8 +64,9 @@ type QuestionService interface {
 }
 
 //Blog returns a new blog
-func Blog(sc user.AsksUsecase, fp shared.FileProvider) http.Handler {
-	scenario = sc
+func Blog(askUC user.AsksUsecase, answrUC user.AnswersUsecase, fp shared.FileProvider) http.Handler {
+	asksUserScenario = askUC
+	answerUserScenarion = answrUC
 	for _, t := range fp.List() {
 		if strings.HasSuffix(t, ".gohtml") {
 			tpl.Parse(fp.String(t))
