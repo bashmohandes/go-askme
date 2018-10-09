@@ -21,15 +21,21 @@ type Server struct {
 // Config configuration
 type Config struct {
 	// Assets relative path to askme package
-	Assets string
-	Port   int
+	Assets               string
+	Port                 int
+	ReloadAssetsOnChange bool
 }
 
 //Start method starts the AskMe App
 func (server *Server) Start() {
+	if server.config.ReloadAssetsOnChange {
+		log.Println("Watching files for changes...")
+		server.fileProvider.Watch()
+		defer server.fileProvider.Close()
+	}
 	b := controllers.Blog(server.asksScenario, server.answrScenario, server.fileProvider)
-	fmt.Println("Hello!")
-	fmt.Printf("Listening on port %d\n", server.config.Port)
+	log.Println("Hello!")
+	log.Printf("Listening on port %d\n", server.config.Port)
 	log.Fatalln(http.ListenAndServe(fmt.Sprintf(":%d", server.config.Port), b))
 }
 
