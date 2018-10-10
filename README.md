@@ -1,4 +1,4 @@
-# Go-ASKME
+# Go-ASKME [![Build Status](https://travis-ci.org/bashmohandes/go-askme.svg?branch=master)](https://travis-ci.org/bashmohandes/go-askme)
 
 This GitHub repo has my attempt to build a web application in Go **without** any Web Frameworks
 
