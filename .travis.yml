@@ -4,3 +4,11 @@ go:
 os:
   - linux
   - osx
+
+services:
+  - docker
+
+before_install:
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then docker build -t go-askme . ; fi
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then docker run -d --rm --env-file=cmd/askme/.env -p 8080:8080 go-askme ; fi
+  
