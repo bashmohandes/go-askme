@@ -5,7 +5,7 @@ import (
 	"html/template"
 	"log"
 	"net/http"
-	"strings"
+	"regexp"
 
 	"github.com/bashmohandes/go-askme/shared"
 	"github.com/julienschmidt/httprouter"
@@ -32,6 +32,14 @@ type ViewModel struct {
 	Data     interface{}
 }
 
+const pattern = "^templates\\/.+\\.gohtml$"
+
+var matcher *regexp.Regexp
+
+func init() {
+	matcher = regexp.MustCompile(pattern)
+}
+
 // Init initializes the controller
 func (c *Controller) Init(fp shared.FileProvider) {
 	c.templates = template.New("master")
@@ -45,7 +53,7 @@ func (c *Controller) Init(fp shared.FileProvider) {
 
 // AddAction adds action to controller
 func (c *Controller) AddAction(method string, path string, f httprouter.Handle) {
-	c.actions = append(c.actions, &Action{Method: method, Path: path, Func: f})
+	c.actions = append(c.actions, &Action{method, path, f})
 }
 
 // Render the specified view model
@@ -63,7 +71,7 @@ func (c *Controller) Actions() []*Action {
 
 func (c *Controller) loadTemplates() {
 	for _, t := range c.fp.List() {
-		if strings.HasSuffix(t, ".gohtml") {
+		if matcher.MatchString(t) {
 			c.templates.Parse(c.fp.String(t))
 		}
 	}

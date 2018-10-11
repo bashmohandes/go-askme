@@ -18,15 +18,14 @@ type HomeController struct {
 	answerUserScenarion user.AnswersUsecase
 }
 
-// New returns a new controller
-func New(askUC user.AsksUsecase, answrUC user.AnswersUsecase, fp shared.FileProvider) *HomeController {
+// NewHomeController returns a new controller
+func NewHomeController(askUC user.AsksUsecase, answrUC user.AnswersUsecase, fp shared.FileProvider) *HomeController {
 	c := &HomeController{
 		asksUserScenario:    askUC,
 		answerUserScenarion: answrUC,
 	}
 	c.Init(fp)
 	c.AddAction("GET", "/", c.index)
-	c.AddAction("GET", "/me", c.me)
 	c.AddAction("GET", "/me/top", c.topAnswers)
 	c.AddAction("POST", "/question", c.postQuestion)
 
@@ -37,11 +36,6 @@ func New(askUC user.AsksUsecase, answrUC user.AnswersUsecase, fp shared.FileProv
 func (c *HomeController) index(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	questions := c.asksUserScenario.LoadUserFeed(models.NewUser("Visitor@hotmail.com", "Visitor Visiting"))
 	c.Render(w, framework.ViewModel{Template: "index", Title: "Index", Data: questions})
-}
-
-// Me serves profile page
-func (c *HomeController) me(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	c.Render(w, framework.ViewModel{Template: "me", Title: "Me", Data: nil})
 }
 
 // TopAnswers serves top answers

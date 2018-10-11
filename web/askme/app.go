@@ -5,6 +5,8 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/bashmohandes/go-askme/web"
+
 	"github.com/bashmohandes/go-askme/shared"
 	"github.com/bashmohandes/go-askme/user/usecase"
 	"github.com/bashmohandes/go-askme/web/askme/controllers"
@@ -28,10 +30,16 @@ type Config struct {
 
 //Start method starts the AskMe App
 func (server *Server) Start() {
-	c := controllers.New(server.asksScenario, server.answrScenario, server.fileProvider)
+	hc := controllers.NewHomeController(server.asksScenario, server.answrScenario, server.fileProvider)
+	pc := controllers.NewProfileController(server.fileProvider)
 	mux := httprouter.New()
 
-	for _, a := range c.Actions() {
+	actions := make([]*framework.Action, 0)
+
+	actions = append(actions, hc.Actions()...)
+	actions = append(actions, pc.Actions()...)
+
+	for _, a := range actions {
 		mux.Handle(a.Method, a.Path, a.Func)
 	}
 
