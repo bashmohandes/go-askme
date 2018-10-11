@@ -8,6 +8,7 @@ import (
 	"github.com/bashmohandes/go-askme/shared"
 	"github.com/bashmohandes/go-askme/user/usecase"
 	"github.com/bashmohandes/go-askme/web/askme/controllers"
+	"github.com/julienschmidt/httprouter"
 )
 
 // Server represents the AskMe application server
@@ -27,10 +28,18 @@ type Config struct {
 
 //Start method starts the AskMe App
 func (server *Server) Start() {
-	b := controllers.Blog(server.asksScenario, server.answrScenario, server.fileProvider)
+	c := controllers.New(server.asksScenario, server.answrScenario, server.fileProvider)
+	mux := httprouter.New()
+
+	for _, a := range c.Actions() {
+		mux.Handle(a.Method, a.Path, a.Func)
+	}
+
+	mux.ServeFiles("/public/*filepath", server.fileProvider)
+
 	fmt.Println("Hello!")
 	fmt.Printf("Listening on port %d\n", server.config.Port)
-	log.Fatalln(http.ListenAndServe(fmt.Sprintf(":%d", server.config.Port), b))
+	log.Fatalln(http.ListenAndServe(fmt.Sprintf(":%d", server.config.Port), mux))
 }
 
 // NewServer Creates a new AskMe app server
