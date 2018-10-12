@@ -15,9 +15,9 @@ type ProfileController struct {
 }
 
 // NewProfileController creates a new ProfileController
-func NewProfileController(fp shared.FileProvider) *ProfileController {
+func NewProfileController(fp shared.FileProvider, config *framework.Config) *ProfileController {
 	c := &ProfileController{}
-	c.Init(fp)
+	c.Init(fp, config)
 	c.AddAction("GET", "/me", c.index)
 
 	return c

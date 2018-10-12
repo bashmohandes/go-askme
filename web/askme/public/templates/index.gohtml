@@ -1,24 +1,33 @@
 {{define "index"}}
-<div>
-    <form class="form">
-        <div class="form-group">
-            <p>
-                <label for="exampleFormControlTextarea1">Your Question?</label>
-                <textarea class="form-control form-control-lg" id="exampleFormControlTextarea1" rows="2"></textarea>
-            </p>
-            <p class="text-right">
-                <button class="btn btn-primary btn-lg" type="submit">Ask Away</button>
-            </p>
-            <hr class="mb-4">
+<div div="container">
+    <div class="row">
+        <div class="col-8">
+            <form class="form">
+                <div class="form-group">
+                    <p>
+                        <label for="exampleFormControlTextarea1">Your Question?</label>
+                        <textarea class="form-control form-control-lg" id="exampleFormControlTextarea1" rows="2"></textarea>
+                    </p>
+                    <p class="text-right">
+                        <button class="btn btn-primary btn-lg" type="submit">Ask Away</button>
+                    </p>
+                    <hr class="mb-4">
+                </div>
+            </form>
         </div>
-    </form>
-    <div>    
-    {{range .Data.Items}}
-        <div class="col-md-4">
-            <h2>{{.Question}}</h2>
-            <p>{{.Answer}}</p>
+    </div>    
+    <div class="row">
+        <div class="col">
+        {{range .Data.Items}}
+            <div class="media">
+                <img class="align-self-start mr-3" src="https://via.placeholder.com/64x64" alt="User Image">
+                <div class="media-body">
+                    <h5 class="mt-0">{{.Question}}</h5>
+                    {{.Answer}}
+                </div>
+            </div>
+        {{end}}
         </div>
-    {{end}}
     </div>
 </div>
 {{end}}
