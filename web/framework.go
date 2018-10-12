@@ -16,6 +16,7 @@ type Controller struct {
 	templates *template.Template
 	actions   []*Action
 	fp        shared.FileProvider
+	config    *Config
 }
 
 // Action captures the http actions of the controller
@@ -32,7 +33,18 @@ type ViewModel struct {
 	Data     interface{}
 }
 
-const pattern = "^templates\\/.+\\.gohtml$"
+// Config configuration
+type Config struct {
+	Debug bool
+	// Assets relative path to askme package
+	Assets string
+	Port   int
+}
+
+const (
+	pattern      = "^templates\\/.+\\.gohtml$"
+	templateName = "master"
+)
 
 var matcher *regexp.Regexp
 
@@ -41,14 +53,11 @@ func init() {
 }
 
 // Init initializes the controller
-func (c *Controller) Init(fp shared.FileProvider) {
-	c.templates = template.New("master")
+func (c *Controller) Init(fp shared.FileProvider, config *Config) {
+	c.config = config
 	c.actions = make([]*Action, 0)
 	c.fp = fp
-	c.templates.Funcs(map[string]interface{}{
-		"RenderTemplate": c.renderTemplate,
-	})
-	c.loadTemplates()
+	c.initTemplates()
 }
 
 // AddAction adds action to controller
@@ -58,7 +67,10 @@ func (c *Controller) AddAction(method string, path string, f httprouter.Handle) 
 
 // Render the specified view model
 func (c *Controller) Render(w http.ResponseWriter, p ViewModel) {
-	err := c.templates.ExecuteTemplate(w, "master", p)
+	if c.config.Debug {
+		c.initTemplates()
+	}
+	err := c.templates.ExecuteTemplate(w, templateName, p)
 	if err != nil {
 		log.Fatalln(err.Error())
 	}
@@ -69,7 +81,11 @@ func (c *Controller) Actions() []*Action {
 	return c.actions
 }
 
-func (c *Controller) loadTemplates() {
+func (c *Controller) initTemplates() {
+	c.templates = template.New(templateName)
+	c.templates.Funcs(map[string]interface{}{
+		"RenderTemplate": c.renderTemplate,
+	})
 	for _, t := range c.fp.List() {
 		if matcher.MatchString(t) {
 			c.templates.Parse(c.fp.String(t))

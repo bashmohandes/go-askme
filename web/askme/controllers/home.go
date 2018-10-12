@@ -19,12 +19,12 @@ type HomeController struct {
 }
 
 // NewHomeController returns a new controller
-func NewHomeController(askUC user.AsksUsecase, answrUC user.AnswersUsecase, fp shared.FileProvider) *HomeController {
+func NewHomeController(askUC user.AsksUsecase, answrUC user.AnswersUsecase, fp shared.FileProvider, config *framework.Config) *HomeController {
 	c := &HomeController{
 		asksUserScenario:    askUC,
 		answerUserScenarion: answrUC,
 	}
-	c.Init(fp)
+	c.Init(fp, config)
 	c.AddAction("GET", "/", c.index)
 	c.AddAction("GET", "/me/top", c.topAnswers)
 	c.AddAction("POST", "/question", c.postQuestion)
