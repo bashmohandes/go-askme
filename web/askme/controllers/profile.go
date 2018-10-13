@@ -3,22 +3,23 @@ package controllers
 import (
 	"net/http"
 
-	"github.com/bashmohandes/go-askme/shared"
-
 	"github.com/bashmohandes/go-askme/web"
 	"github.com/julienschmidt/httprouter"
 )
 
 // ProfileController type
 type ProfileController struct {
-	framework.Controller
+	framework.Router
+	framework.Renderer
 }
 
 // NewProfileController creates a new ProfileController
-func NewProfileController(fp shared.FileProvider, config *framework.Config) *ProfileController {
-	c := &ProfileController{}
-	c.Init(fp, config)
-	c.AddAction("GET", "/me", c.index)
+func NewProfileController(rtr framework.Router, rndr framework.Renderer) *ProfileController {
+	c := &ProfileController{
+		Router:   rtr,
+		Renderer: rndr,
+	}
+	c.Get("/me", c.index)
 
 	return c
 }
