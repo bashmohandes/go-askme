@@ -2,21 +2,36 @@ package framework
 
 import (
 	"bytes"
+	"fmt"
 	"html/template"
 	"log"
 	"net/http"
+	"os"
 	"regexp"
 
 	"github.com/bashmohandes/go-askme/shared"
 	"github.com/julienschmidt/httprouter"
 )
 
-// Controller represents Controller in MVC  model
-type Controller struct {
-	templates *template.Template
-	actions   []*Action
-	fp        shared.FileProvider
-	config    *Config
+// Router interface
+type Router interface {
+	Actions() []*Action
+	Get(path string, f httprouter.Handle)
+	Post(path string, f httprouter.Handle)
+	Delete(path string, f httprouter.Handle)
+	Put(path string, f httprouter.Handle)
+}
+
+// Renderer type
+type Renderer interface {
+	Render(w http.ResponseWriter, p ViewModel)
+}
+
+// App represents the AskMe application server
+type App struct {
+	config       *Config
+	fileProvider shared.FileProvider
+	rtr          Router
 }
 
 // Action captures the http actions of the controller
@@ -35,10 +50,20 @@ type ViewModel struct {
 
 // Config configuration
 type Config struct {
-	Debug bool
-	// Assets relative path to askme package
-	Assets string
-	Port   int
+	Debug        bool
+	Port         int
+	PublicFolder string
+}
+
+// router represents router in MVC  model
+type router struct {
+	actions []*Action
+}
+
+type renderer struct {
+	fp        shared.FileProvider
+	templates *template.Template
+	config    *Config
 }
 
 const (
@@ -52,50 +77,111 @@ func init() {
 	matcher = regexp.MustCompile(pattern)
 }
 
-// Init initializes the controller
-func (c *Controller) Init(fp shared.FileProvider, config *Config) {
-	c.config = config
-	c.actions = make([]*Action, 0)
-	c.fp = fp
-	c.initTemplates()
+// NewRouter initializes the controller
+func NewRouter() Router {
+	return &router{
+		actions: make([]*Action, 0),
+	}
+}
+
+// Actions return the list of configured actions
+func (r *router) Actions() []*Action {
+	return r.actions
+}
+
+func (r *router) Get(path string, f httprouter.Handle) {
+	r.action("GET", path, f)
+}
+
+func (r *router) Post(path string, f httprouter.Handle) {
+	r.action("POST", path, f)
+}
+
+func (r *router) Delete(path string, f httprouter.Handle) {
+	r.action("DELETE", path, f)
+}
+
+func (r *router) Put(path string, f httprouter.Handle) {
+	r.action("PUT", path, f)
 }
 
 // AddAction adds action to controller
-func (c *Controller) AddAction(method string, path string, f httprouter.Handle) {
-	c.actions = append(c.actions, &Action{method, path, f})
+func (r *router) action(method string, path string, f httprouter.Handle) {
+	log.Printf("caller %T, method %s, path %s\n", r, method, path)
+	r.actions = append(r.actions, &Action{method, path, f})
 }
 
 // Render the specified view model
-func (c *Controller) Render(w http.ResponseWriter, p ViewModel) {
-	if c.config.Debug {
-		c.initTemplates()
+func (r *renderer) Render(w http.ResponseWriter, p ViewModel) {
+	if r.config.Debug {
+		r.initTemplates()
 	}
-	err := c.templates.ExecuteTemplate(w, templateName, p)
+	err := r.templates.ExecuteTemplate(w, templateName, p)
 	if err != nil {
 		log.Fatalln(err.Error())
 	}
 }
 
-// Actions return the list of configured actions
-func (c *Controller) Actions() []*Action {
-	return c.actions
-}
-
-func (c *Controller) initTemplates() {
-	c.templates = template.New(templateName)
-	c.templates.Funcs(map[string]interface{}{
-		"RenderTemplate": c.renderTemplate,
+func (r *renderer) initTemplates() {
+	r.templates = template.New(templateName)
+	r.templates.Funcs(map[string]interface{}{
+		"RenderTemplate": r.renderTemplate,
 	})
-	for _, t := range c.fp.List() {
+	log.Println("Loading templates...")
+	wd, _ := os.Getwd()
+	log.Printf("Current Working Directory: %s\n", wd)
+	for _, t := range r.fp.List() {
+		log.Printf("Found file: %s", t)
 		if matcher.MatchString(t) {
-			c.templates.Parse(c.fp.String(t))
+			log.Print(" -- loading template -- ")
+			r.templates.Parse(r.fp.String(t))
+			log.Print("LOADED")
 		}
+		log.Println()
 	}
 }
 
-func (c *Controller) renderTemplate(name string, data interface{}) (ret template.HTML, err error) {
+func (r *renderer) renderTemplate(name string, data interface{}) (ret template.HTML, err error) {
 	buf := bytes.NewBuffer([]byte{})
-	err = c.templates.ExecuteTemplate(buf, name, data)
+	err = r.templates.ExecuteTemplate(buf, name, data)
 	ret = template.HTML(buf.String())
 	return
+}
+
+// NewRenderer creates a new rendere
+func NewRenderer(fp shared.FileProvider, config *Config) Renderer {
+	r := &renderer{
+		config: config,
+		fp:     fp,
+	}
+
+	r.initTemplates()
+	return r
+}
+
+//Start method starts the AskMe App
+func (app *App) Start() error {
+	mux := httprouter.New()
+
+	for _, a := range app.rtr.Actions() {
+		log.Printf("Method %s, Path %s\n", a.Method, a.Path)
+		mux.Handle(a.Method, a.Path, a.Func)
+	}
+
+	mux.ServeFiles("/public/*filepath", app.fileProvider)
+
+	fmt.Println("Hello!")
+	fmt.Printf("Listening on port %d\n", app.config.Port)
+	return http.ListenAndServe(fmt.Sprintf(":%d", app.config.Port), mux)
+}
+
+// NewApp Creates a new app server
+func NewApp(
+	config *Config,
+	ctrl Router, fileProvider shared.FileProvider) *App {
+	return &App{
+		config:       config,
+		fileProvider: fileProvider,
+		rtr:          ctrl,
+	}
 }

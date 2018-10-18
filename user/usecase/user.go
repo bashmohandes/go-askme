@@ -13,17 +13,32 @@ type userUsecase struct {
 	answerRepo   answer.Repository
 }
 
-// Feed type
-type Feed struct {
-	Items []*FeedItem
+// AnswersFeed type
+type AnswersFeed struct {
+	Items []*AnswerFeedItem
 }
 
-// FeedItem type
-type FeedItem struct {
+// AnswerFeedItem type
+type AnswerFeedItem struct {
+	AnswerID   models.UniqueID
 	Question   string
 	Answer     string
 	AnsweredAt time.Time
 	Likes      uint
+	User       string
+}
+
+// QuestionsFeed type
+type QuestionsFeed struct {
+	Items []*QuestionFeedItem
+}
+
+// QuestionFeedItem type
+type QuestionFeedItem struct {
+	QuestionID models.UniqueID
+	Question   string
+	AskedAt    time.Time
+	UserID     models.UniqueID
 	User       string
 }
 
@@ -32,12 +47,12 @@ type AsksUsecase interface {
 	Ask(from *models.User, to *models.User, question string) *models.Question
 	Like(user *models.User, answer *models.Answer) uint
 	Unlike(user *models.User, answer *models.Answer) uint
-	LoadUserFeed(user *models.User) *Feed
+	LoadUserFeed(user *models.User) *AnswersFeed
 }
 
 // AnswersUsecase for the registered user
 type AnswersUsecase interface {
-	FetchUnansweredQuestions(userID models.UniqueID) []*models.Question
+	FetchUnansweredQuestions(userID models.UniqueID) *QuestionsFeed
 	Answer(user *models.User, question *models.Question, answer string) *models.Answer
 }
 
@@ -58,8 +73,22 @@ func NewAnswersUsecase(qRepo question.Repository, aRepo answer.Repository) Answe
 }
 
 // LoadQuestions load questions model
-func (svc *userUsecase) FetchUnansweredQuestions(userID models.UniqueID) []*models.Question {
-	return svc.questionRepo.LoadUnansweredQuestions(userID)
+func (svc *userUsecase) FetchUnansweredQuestions(userID models.UniqueID) *QuestionsFeed {
+	feed := QuestionsFeed{
+		Items: make([]*QuestionFeedItem, 0),
+	}
+	questions := svc.questionRepo.LoadUnansweredQuestions(userID)
+	for _, q := range questions {
+		fi := &QuestionFeedItem{
+			AskedAt:    q.CreatedOn,
+			QuestionID: q.ID,
+			Question:   q.Text,
+			User:       q.CreatedBy.Name,
+			UserID:     q.CreatedBy.ID,
+		}
+		feed.Items = append(feed.Items, fi)
+	}
+	return &feed
 }
 
 // Saves question
@@ -87,17 +116,17 @@ func (svc *userUsecase) Answer(user *models.User, question *models.Question, ans
 	return a
 }
 
-func (svc *userUsecase) LoadUserFeed(user *models.User) *Feed {
-	return &Feed{
-		Items: []*FeedItem{
-			&FeedItem{
+func (svc *userUsecase) LoadUserFeed(user *models.User) *AnswersFeed {
+	return &AnswersFeed{
+		Items: []*AnswerFeedItem{
+			&AnswerFeedItem{
 				Question:   "What is your name?",
 				Answer:     "Mohamed Elsherif daaah!",
 				AnsweredAt: time.Now(),
 				Likes:      10,
 				User:       "Anonymous",
 			},
-			&FeedItem{
+			&AnswerFeedItem{
 				Question:   "What is your age?",
 				Answer:     "I would never tell, but it is 35",
 				AnsweredAt: time.Now(),
