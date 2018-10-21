@@ -5,7 +5,7 @@ import (
 
 	"github.com/bashmohandes/go-askme/model"
 	"github.com/bashmohandes/go-askme/user/usecase"
-	"github.com/bashmohandes/go-askme/web"
+	"github.com/bashmohandes/go-askme/web/framework"
 	"github.com/julienschmidt/httprouter"
 )
 

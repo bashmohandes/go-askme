@@ -1,8 +1,8 @@
 package askme
 
 import (
-	"github.com/bashmohandes/go-askme/web"
 	"github.com/bashmohandes/go-askme/web/askme/controllers"
+	"github.com/bashmohandes/go-askme/web/framework"
 )
 
 // App represents the AskMe web app

@@ -5,14 +5,12 @@ import (
 	"os"
 	"strconv"
 
-	"github.com/bashmohandes/go-askme/web/askme"
-
 	"github.com/bashmohandes/go-askme/answer/inmemory"
 	"github.com/bashmohandes/go-askme/question/inmemory"
-	"github.com/bashmohandes/go-askme/shared"
 	"github.com/bashmohandes/go-askme/user/usecase"
-	"github.com/bashmohandes/go-askme/web"
+	"github.com/bashmohandes/go-askme/web/askme"
 	"github.com/bashmohandes/go-askme/web/askme/controllers"
+	"github.com/bashmohandes/go-askme/web/framework"
 	"github.com/gobuffalo/packr"
 	_ "github.com/joho/godotenv/autoload"
 	"go.uber.org/dig"
@@ -43,7 +41,7 @@ func main() {
 	}
 }
 
-func newFileProvider(config *framework.Config) shared.FileProvider {
+func newFileProvider(config *framework.Config) framework.FileProvider {
 	log.Printf("Initializing box to path %s\n", config.PublicFolder)
 	wd, _ := os.Getwd()
 	log.Printf("Working directory %s\n", wd)
