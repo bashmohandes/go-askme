@@ -42,9 +42,6 @@ func main() {
 }
 
 func newFileProvider(config *framework.Config) framework.FileProvider {
-	log.Printf("Initializing box to path %s\n", config.PublicFolder)
-	wd, _ := os.Getwd()
-	log.Printf("Working directory %s\n", wd)
 	return packr.NewBox(config.PublicFolder)
 }
 

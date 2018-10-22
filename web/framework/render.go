@@ -5,7 +5,6 @@ import (
 	"html/template"
 	"log"
 	"net/http"
-	"os"
 	"regexp"
 )
 
@@ -41,7 +40,10 @@ type renderer struct {
 // Render the specified view model
 func (r *renderer) Render(w http.ResponseWriter, p ViewModel) {
 	if r.config.Debug {
-		r.initTemplates()
+		err := r.initTemplates()
+		if err != nil {
+			log.Printf(err.Error())
+		}
 	}
 	err := r.templates.ExecuteTemplate(w, templateName, p)
 	if err != nil {
@@ -49,23 +51,20 @@ func (r *renderer) Render(w http.ResponseWriter, p ViewModel) {
 	}
 }
 
-func (r *renderer) initTemplates() {
+func (r *renderer) initTemplates() error {
 	r.templates = template.New(templateName)
 	r.templates.Funcs(map[string]interface{}{
 		"RenderTemplate": r.renderTemplate,
 	})
-	log.Println("Loading templates...")
-	wd, _ := os.Getwd()
-	log.Printf("Current Working Directory: %s\n", wd)
 	for _, t := range r.fp.List() {
-		log.Printf("Found file: %s", t)
 		if matcher.MatchString(t) {
-			log.Print(" -- loading template -- ")
-			r.templates.Parse(r.fp.String(t))
-			log.Print("LOADED")
+			_, err := r.templates.Parse(r.fp.String(t))
+			if err != nil {
+				return err
+			}
 		}
-		log.Println()
 	}
+	return nil
 }
 
 func (r *renderer) renderTemplate(name string, data interface{}) (ret template.HTML, err error) {
@@ -82,6 +81,9 @@ func NewRenderer(fp FileProvider, config *Config) Renderer {
 		fp:     fp,
 	}
 
-	r.initTemplates()
+	err := r.initTemplates()
+	if err != nil {
+		log.Fatalln(err.Error())
+	}
 	return r
 }
