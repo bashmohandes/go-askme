@@ -9,6 +9,9 @@
         <meta name="author" content="Mohamed Elsherif!">
         <link rel="stylesheet" href="/public/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">                
         <link rel="stylesheet" href="/public/css/sticky-footer-navbar.css">
+        {{if .HeadTmpl}}
+            {{ RenderTemplate .HeadTmpl . }}
+        {{end}}
     </head>
     <body>      
         <header>      
@@ -26,7 +29,7 @@
                 <a class="nav-link" href="/questions">Questions</a>
                 </li>
                 <li class="nav-item">
-                <a class="nav-link" href="/me/top">Top Answers</a>
+                <a class="nav-link" href="/login">Login</a>
                 </li>
             </ul>
             <form class="form-inline mt-2 mt-md-0">
@@ -37,7 +40,7 @@
         </nav>
         </header>  
         <main role="main" class="container">            
-            {{ RenderTemplate .Template . }}    
+            {{ RenderTemplate .BodyTmpl . }}    
         </main>
         <footer class="footer">
             <div class="container">

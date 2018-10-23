@@ -7,6 +7,7 @@ import (
 
 	"github.com/bashmohandes/go-askme/answer/inmemory"
 	"github.com/bashmohandes/go-askme/question/inmemory"
+	userRepo "github.com/bashmohandes/go-askme/user/inmemory"
 	"github.com/bashmohandes/go-askme/user/usecase"
 	"github.com/bashmohandes/go-askme/web/askme"
 	"github.com/bashmohandes/go-askme/web/askme/controllers"
@@ -25,8 +26,10 @@ func main() {
 	container.Provide(framework.NewRenderer)
 	container.Provide(question.NewRepository)
 	container.Provide(answer.NewRepository)
+	container.Provide(userRepo.NewRepository)
 	container.Provide(user.NewAsksUsecase)
 	container.Provide(user.NewAnswersUsecase)
+	container.Provide(user.NewAuthUsecase)
 	container.Provide(controllers.NewHomeController)
 	container.Provide(controllers.NewProfileController)
 	container.Provide(askme.NewApp)

@@ -1,16 +1,23 @@
 package user
 
 import (
+	"fmt"
+	"log"
 	"time"
 
 	"github.com/bashmohandes/go-askme/answer"
 	"github.com/bashmohandes/go-askme/model"
 	"github.com/bashmohandes/go-askme/question"
+	"github.com/bashmohandes/go-askme/user"
 )
 
 type userUsecase struct {
 	questionRepo question.Repository
 	answerRepo   answer.Repository
+}
+
+type authUsecase struct {
+	userRepo user.Repository
 }
 
 // AnswersFeed type
@@ -56,6 +63,12 @@ type AnswersUsecase interface {
 	Answer(user *models.User, question *models.Question, answer string) *models.Answer
 }
 
+// AuthUsecase defines authentication use cases
+type AuthUsecase interface {
+	Signin(email string, password string) (*models.User, error)
+	Signup(email string, password string, name string) (*models.User, error)
+}
+
 // NewAsksUsecase creates a new service
 func NewAsksUsecase(qRepo question.Repository, aRepo answer.Repository) AsksUsecase {
 	return &userUsecase{
@@ -69,6 +82,13 @@ func NewAnswersUsecase(qRepo question.Repository, aRepo answer.Repository) Answe
 	return &userUsecase{
 		questionRepo: qRepo,
 		answerRepo:   aRepo,
+	}
+}
+
+// NewAuthUsecase creates a new auth usecase
+func NewAuthUsecase(uRepo user.Repository) AuthUsecase {
+	return &authUsecase{
+		userRepo: uRepo,
 	}
 }
 
@@ -135,4 +155,33 @@ func (svc *userUsecase) LoadUserFeed(user *models.User) *AnswersFeed {
 			},
 		},
 	}
+}
+
+func (svc *authUsecase) Signin(email string, password string) (*models.User, error) {
+	user, err := svc.userRepo.GetByEmail(email)
+	if err != nil {
+		log.Println(err.Error())
+	}
+	if user == nil {
+		return nil, fmt.Errorf("Login failed for user %s", email)
+	}
+
+	if user.Verify(password) {
+		return user, nil
+	}
+
+	return nil, fmt.Errorf("Login failed for user %s", email)
+}
+
+func (svc *authUsecase) Signup(email string, password string, name string) (*models.User, error) {
+	user, err := svc.userRepo.GetByEmail(email)
+	if err != nil {
+		log.Println(err.Error())
+	}
+	if user != nil {
+		return nil, fmt.Errorf("User with the same email already exists")
+	}
+
+	user, err = models.NewUser(email, name, password)
+	return svc.userRepo.Add(user)
 }

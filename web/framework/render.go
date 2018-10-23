@@ -26,7 +26,8 @@ type Renderer interface {
 
 // ViewModel defines the page ViewModel
 type ViewModel struct {
-	Template string
+	BodyTmpl string
+	HeadTmpl string
 	Title    string
 	Data     interface{}
 }

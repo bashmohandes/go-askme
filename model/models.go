@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"golang.org/x/crypto/bcrypt"
 )
 
 // UniqueID type
@@ -44,8 +45,9 @@ type Question struct {
 // User type
 type User struct {
 	Entity
-	Email string
-	Name  string
+	Email          string
+	Name           string
+	HashedPassword []byte
 }
 
 // Answer the specified question
@@ -80,16 +82,26 @@ func (user *User) Ask(other *User, question string) *Question {
 	}
 }
 
+// Verify user password
+func (user *User) Verify(password string) bool {
+	return bcrypt.CompareHashAndPassword(user.HashedPassword, []byte(password)) == nil
+}
+
 // NewUser creates a new user
-func NewUser(email string, name string) *User {
+func NewUser(email string, name string, password string) (*User, error) {
+	hpass, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	if err != nil {
+		return nil, err
+	}
 	return &User{
 		Entity: Entity{
 			ID:        NewUniqueID(),
 			CreatedOn: time.Now(),
 		},
-		Email: email,
-		Name:  name,
-	}
+		Email:          email,
+		Name:           name,
+		HashedPassword: hpass,
+	}, nil
 }
 
 // NewUniqueID generates new UniqueID

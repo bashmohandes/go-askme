@@ -1,0 +1,26 @@
+{{define "signup.head"}}
+<!-- Custom styles for this template -->
+<link href="/public/css/login.css" rel="stylesheet">
+{{end}}
+
+{{define "signup.body"}}
+<div class="text-center">
+    <form class="form-signin" action="/signup" method="POST">    
+        <h1 class="h3 mb-3 font-weight-normal">New Account</h1>
+        <label for="inputEmail" class="sr-only">Name</label>
+        <input type="text" id="inputName" name="name" class="form-control" placeholder="Name" required autofocus>
+
+        <label for="inputEmail" class="sr-only">Email address</label>
+        <input type="email" id="inputEmail" name="email" class="form-control" placeholder="Email address" required>
+
+        <label for="inputPassword" class="sr-only">Password</label>
+        <input type="password" id="inputPassword" class="form-control" name="password" placeholder="Password" required>
+
+        <label for="passwordAgain" class="sr-only">Password Again</label>
+        <input type="password" id="passwordAgain" class="form-control" name="password_again" placeholder="One more time" required>
+
+        <button class="btn btn-lg btn-primary btn-block" type="submit">Register</button>
+        <p class="mt-5 mb-3 text-muted">&copy; 2017-2018</p>
+    </form>
+</div>
+{{end}}
