@@ -25,8 +25,8 @@ The main domain models, which in our case _so far_ **Question**, **Answer**, **U
 ### Components
 Each component consists of all the basic layers needed to complete this component from top to bottom, like **Use Cases**, **Repositories**, **Tests**
 
-### Shared
-Shared is anything that can be shared, like utilities.
+### Framework
+This is shaping up to be a tiny MVC framework, interesting
 
 ## Dependencies
 
