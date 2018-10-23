@@ -3,7 +3,7 @@ package controllers
 import (
 	"net/http"
 
-	"github.com/bashmohandes/go-askme/web"
+	"github.com/bashmohandes/go-askme/web/framework"
 	"github.com/julienschmidt/httprouter"
 )
 
