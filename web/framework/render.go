@@ -24,12 +24,15 @@ type Renderer interface {
 	Render(w http.ResponseWriter, p ViewModel)
 }
 
+// Map string to objects
+type Map map[string]interface{}
+
 // ViewModel defines the page ViewModel
 type ViewModel struct {
 	BodyTmpl string
 	HeadTmpl string
 	Title    string
-	Data     interface{}
+	Bag      Map
 }
 
 type renderer struct {

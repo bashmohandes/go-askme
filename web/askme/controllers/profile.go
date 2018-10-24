@@ -26,5 +26,5 @@ func NewProfileController(rtr framework.Router, rndr framework.Renderer) *Profil
 
 // Me serves profile page
 func (c *ProfileController) index(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	c.Render(w, framework.ViewModel{BodyTmpl: "me", Title: "Me", Data: nil})
+	c.Render(w, framework.ViewModel{BodyTmpl: "me", Title: "Me", Bag: framework.Map{}})
 }

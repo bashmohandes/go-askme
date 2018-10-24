@@ -24,6 +24,7 @@ func main() {
 	container.Provide(framework.NewApp)
 	container.Provide(framework.NewRouter)
 	container.Provide(framework.NewRenderer)
+	container.Provide(framework.NewInMemorySessionStore)
 	container.Provide(question.NewRepository)
 	container.Provide(answer.NewRepository)
 	container.Provide(userRepo.NewRepository)
@@ -32,6 +33,7 @@ func main() {
 	container.Provide(user.NewAuthUsecase)
 	container.Provide(controllers.NewHomeController)
 	container.Provide(controllers.NewProfileController)
+	container.Provide(controllers.NewAuthController)
 	container.Provide(askme.NewApp)
 	err := container.Invoke(func(app *askme.App) {
 		if e := app.Start(); e != nil {
