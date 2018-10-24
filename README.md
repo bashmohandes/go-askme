@@ -48,12 +48,12 @@ This is not meant to depend on any fat frameworks, especially web frameworks, al
   ```bash
   go get -u -v ./...
  
-  go run cmd/askme/main.go
+  go run main.go
   ```
 * (Optional) if you prefer Docker, run the following commands
   ```bash
   docker build -t go-askme .
 
-  docker run --env-file=cmd/askme/.env --rm -p 8080:8080 go-askme
+  docker run --env-file=.env --rm -p 8080:8080 go-askme
   ```
 Then from a browser window, navigate to http://localhost:8080

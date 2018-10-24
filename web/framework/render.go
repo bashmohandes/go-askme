@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	pattern      = "^templates\\/.+\\.gohtml$"
+	pattern      = `^templates(\\|\/)\w+\.gohtml$` // matches templates/*.gohtml (Linux & macOS) or templates\*.gohtml (Windows)
 	templateName = "master"
 )
 
