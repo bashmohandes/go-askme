@@ -10,6 +10,10 @@ import (
 // UniqueID type
 type UniqueID uuid.UUID
 
+func (u UniqueID) String() string {
+	return uuid.UUID(u).String()
+}
+
 // EmptyUniqueID represents empty UniqueID
 var EmptyUniqueID = UniqueID(uuid.Nil)
 

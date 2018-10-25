@@ -1,10 +1,7 @@
 package controllers
 
 import (
-	"net/http"
-
 	"github.com/bashmohandes/go-askme/web/framework"
-	"github.com/julienschmidt/httprouter"
 )
 
 // ProfileController type
@@ -19,12 +16,13 @@ func NewProfileController(rtr framework.Router, rndr framework.Renderer) *Profil
 		Router:   rtr,
 		Renderer: rndr,
 	}
-	c.Get("/me", c.index)
+	c.Get("/me", c.index).Authenticated()
 
 	return c
 }
 
 // Me serves profile page
-func (c *ProfileController) index(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	c.Render(w, framework.ViewModel{BodyTmpl: "me", Title: "Me", Bag: framework.Map{}})
+func (c *ProfileController) index(cxt framework.Context) {
+	w := cxt.ResponseWriter()
+	c.Render(w, framework.ViewModel{BodyTmpl: "questions", Title: "Me", Bag: framework.Map{}})
 }

@@ -1,7 +1,6 @@
 package framework
 
 import (
-	"fmt"
 	"sync"
 )
 
@@ -23,15 +22,10 @@ func (s *Session) Set(key string, val interface{}) {
 }
 
 // Get the value for the specified key
-func (s *Session) Get(key string) (interface{}, error) {
+func (s *Session) Get(key string) interface{} {
 	s.RLock()
 	defer s.RUnlock()
-	v, ok := s.data[key]
-	if !ok {
-		return nil, fmt.Errorf("Key not found")
-	}
-
-	return v, nil
+	return s.data[key]
 }
 
 // ID returns the SessionID

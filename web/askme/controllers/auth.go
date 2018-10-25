@@ -6,7 +6,6 @@ import (
 
 	"github.com/bashmohandes/go-askme/user/usecase"
 	"github.com/bashmohandes/go-askme/web/framework"
-	"github.com/julienschmidt/httprouter"
 )
 
 // AuthController manages authentication actions
@@ -14,19 +13,19 @@ type AuthController struct {
 	framework.Router
 	framework.Renderer
 	user.AuthUsecase
-	sstore framework.SessionStore
+	smgr framework.SessionManager
 }
 
 // NewAuthController creates a new AuthController
 func NewAuthController(
 	rtr framework.Router,
 	rndr framework.Renderer,
-	sstr framework.SessionStore,
+	smgr framework.SessionManager,
 	authUC user.AuthUsecase) *AuthController {
 	c := &AuthController{
 		Router:      rtr,
 		Renderer:    rndr,
-		sstore:      sstr,
+		smgr:        smgr,
 		AuthUsecase: authUC,
 	}
 
@@ -34,33 +33,42 @@ func NewAuthController(
 	c.Post("/login", c.performLogin)
 	c.Get("/signup", c.signup)
 	c.Post("/signup", c.performSignup)
+	c.Get("/logout", c.logout).Authenticated()
 
 	return c
 }
 
-func (c *AuthController) login(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	c.Render(w, framework.ViewModel{BodyTmpl: "login.body", Title: "Login", HeadTmpl: "login.head", Bag: framework.Map{}})
+func (c *AuthController) login(cxt framework.Context) {
+	cxt.Session().Set("redir", cxt.Request().URL.Query().Get("redir"))
+	c.Render(cxt.ResponseWriter(), framework.ViewModel{BodyTmpl: "login.body", Title: "Login", HeadTmpl: "login.head", Bag: framework.Map{}})
 }
 
-func (c *AuthController) performLogin(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	email := r.PostFormValue("email")
-	pwd := r.PostFormValue("password")
+func (c *AuthController) performLogin(cxt framework.Context) {
+	email := cxt.Request().PostFormValue("email")
+	pwd := cxt.Request().PostFormValue("password")
 	// remember := r.PostFormValue("rememberMe")
 	user, err := c.Signin(email, pwd)
 	if err != nil {
-		w.Write([]byte(fmt.Sprintf("Err: %v", err)))
+		cxt.ResponseWriter().Write([]byte(fmt.Sprintf("Err: %v", err)))
 		return
 	}
-	session := c.sstore.FetchOrCreate(w, r)
-	session.Set("user", user)
-	http.Redirect(w, r, "/", http.StatusFound)
+
+	cxt.Session().Set("user", user)
+	cxt.SetUser(&framework.User{ID: user.ID.String(), Name: user.Name})
+	redir, _ := cxt.Session().Get("redir").(string)
+	if len(redir) == 0 {
+		redir = "/"
+	}
+	cxt.Redirect(redir, http.StatusFound)
 }
 
-func (c *AuthController) signup(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	c.Render(w, framework.ViewModel{BodyTmpl: "signup.body", Title: "Signup", HeadTmpl: "signup.head", Bag: framework.Map{}})
+func (c *AuthController) signup(cxt framework.Context) {
+	c.Render(cxt.ResponseWriter(), framework.ViewModel{BodyTmpl: "signup.body", Title: "Signup", HeadTmpl: "signup.head", Bag: framework.Map{}})
 }
 
-func (c *AuthController) performSignup(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+func (c *AuthController) performSignup(cxt framework.Context) {
+	r := cxt.Request()
+	w := cxt.ResponseWriter()
 	email := r.PostFormValue("email")
 	pwd := r.PostFormValue("password")
 	name := r.PostFormValue("name")
@@ -69,5 +77,10 @@ func (c *AuthController) performSignup(w http.ResponseWriter, r *http.Request, p
 		w.Write([]byte(fmt.Sprintf("Err: %v", err)))
 		return
 	}
-	http.Redirect(w, r, "/login", http.StatusFound)
+	cxt.Redirect("/login", http.StatusFound)
+}
+
+func (c *AuthController) logout(cxt framework.Context) {
+	c.smgr.Abandon(cxt)
+	cxt.Redirect("/", http.StatusFound)
 }

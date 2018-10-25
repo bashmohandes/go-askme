@@ -3,18 +3,19 @@ package framework
 import (
 	"log"
 	"net/http"
-
-	"github.com/julienschmidt/httprouter"
 )
 
 // Router interface
 type Router interface {
-	Actions() []*Action
-	Get(path string, f httprouter.Handle)
-	Post(path string, f httprouter.Handle)
-	Delete(path string, f httprouter.Handle)
-	Put(path string, f httprouter.Handle)
+	Routes() []*Route
+	Get(string, RouteHandler) *Route
+	Post(string, RouteHandler) *Route
+	Delete(string, RouteHandler) *Route
+	Put(string, RouteHandler) *Route
 }
+
+// RouteHandler defines handler
+type RouteHandler func(context Context)
 
 // FileProvider fetches files by name
 type FileProvider interface {
@@ -23,48 +24,62 @@ type FileProvider interface {
 	Open(name string) (http.File, error)
 }
 
-// Action captures the http actions of the controller
-type Action struct {
-	Method string
-	Path   string
-	Func   httprouter.Handle
+// Route captures the http actions of the controller
+type Route struct {
+	Method  string
+	Path    string
+	Options *RouteOptions
+	Func    RouteHandler
+}
+
+// RouteOptions settings
+type RouteOptions struct {
+	AuthRequired bool
 }
 
 // router represents router in MVC  model
 type router struct {
-	actions []*Action
+	actions []*Route
 }
 
 // NewRouter initializes the controller
 func NewRouter() Router {
 	return &router{
-		actions: make([]*Action, 0),
+		actions: make([]*Route, 0),
 	}
 }
 
-// Actions return the list of configured actions
-func (r *router) Actions() []*Action {
+// Routes return the list of configured actions
+func (r *router) Routes() []*Route {
 	return r.actions
 }
 
-func (r *router) Get(path string, f httprouter.Handle) {
-	r.action("GET", path, f)
+func (r *router) Get(path string, f RouteHandler) *Route {
+	return r.route("GET", path, f)
 }
 
-func (r *router) Post(path string, f httprouter.Handle) {
-	r.action("POST", path, f)
+func (r *router) Post(path string, f RouteHandler) *Route {
+	return r.route("POST", path, f)
 }
 
-func (r *router) Delete(path string, f httprouter.Handle) {
-	r.action("DELETE", path, f)
+func (r *router) Delete(path string, f RouteHandler) *Route {
+	return r.route("DELETE", path, f)
 }
 
-func (r *router) Put(path string, f httprouter.Handle) {
-	r.action("PUT", path, f)
+func (r *router) Put(path string, f RouteHandler) *Route {
+	return r.route("PUT", path, f)
 }
 
-// AddAction adds action to controller
-func (r *router) action(method string, path string, f httprouter.Handle) {
+// AddAction adds route to controller
+func (r *router) route(method string, path string, f RouteHandler) *Route {
 	log.Printf("caller %T, method %s, path %s\n", r, method, path)
-	r.actions = append(r.actions, &Action{method, path, f})
+	route := &Route{Method: method, Path: path, Func: f, Options: &RouteOptions{}}
+	r.actions = append(r.actions, route)
+	return route
+}
+
+// Authenticated Adds authentication options
+func (rt *Route) Authenticated() *Route {
+	rt.Options.AuthRequired = true
+	return rt
 }

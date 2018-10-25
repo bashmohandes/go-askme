@@ -28,9 +28,19 @@
                 <li class="nav-item">
                 <a class="nav-link" href="/questions">Questions</a>
                 </li>
-                <li class="nav-item">
-                <a class="nav-link" href="/login">Login</a>
-                </li>
+                
+                {{ if .Bag.user }}
+                    <li class="nav-item">
+                        <a class="nav-link" href="/me">{{.Bag.user.Name}}'s Profile</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/logout">Logout</a>
+                    </li>
+                {{ else }}
+                    <li class="nav-item">
+                        <a class="nav-link" href="/login">Login</a>
+                    </li>
+                {{ end}}                
             </ul>
             <form class="form-inline mt-2 mt-md-0">
                 <input class="form-control mr-sm-2" type="text" placeholder="Search" aria-label="Search">

@@ -18,5 +18,8 @@ func NewApp(base framework.App,
 	app := &App{
 		App: base,
 	}
+
+	//app.App.Use(middleware.NewRequestLogger())
+
 	return app
 }
