@@ -14,6 +14,16 @@ func (u UniqueID) String() string {
 	return uuid.UUID(u).String()
 }
 
+// ParseUniqueID parses string to UniqueID
+func ParseUniqueID(id string) (UniqueID, error) {
+	u, err := uuid.Parse(id)
+	if err != nil {
+		return EmptyUniqueID, err
+	}
+
+	return UniqueID(u), nil
+}
+
 // EmptyUniqueID represents empty UniqueID
 var EmptyUniqueID = UniqueID(uuid.Nil)
 

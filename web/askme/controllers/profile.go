@@ -24,5 +24,5 @@ func NewProfileController(rtr framework.Router, rndr framework.Renderer) *Profil
 // Me serves profile page
 func (c *ProfileController) index(cxt framework.Context) {
 	w := cxt.ResponseWriter()
-	c.Render(w, framework.ViewModel{BodyTmpl: "questions", Title: "Me", Bag: framework.Map{}})
+	c.Render(w, framework.ViewModel{BodyTmpl: "questions", Title: "Me", Bag: framework.Map{"user": cxt.Session().Get("user")}})
 }

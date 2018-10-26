@@ -1,6 +1,8 @@
 package controllers
 
 import (
+	"net/http"
+
 	"github.com/bashmohandes/go-askme/model"
 	"github.com/bashmohandes/go-askme/user/usecase"
 	"github.com/bashmohandes/go-askme/web/framework"
@@ -30,7 +32,7 @@ func NewHomeController(
 	c.Get("/", c.index).Authenticated()
 	c.Get("/me/top", c.topAnswers).Authenticated()
 	c.Get("/questions", c.questions).Authenticated()
-	c.Post("/questions", c.postQuestion).Authenticated()
+	c.Post("/u/:email/questions", c.postQuestion).Authenticated()
 	return c
 }
 
@@ -41,7 +43,11 @@ func (c *HomeController) index(cxt framework.Context) {
 
 // TopAnswers serves top answers
 func (c *HomeController) questions(cxt framework.Context) {
-	c.Render(cxt.ResponseWriter(), framework.ViewModel{BodyTmpl: "questions", Title: "Questions", Bag: framework.Map{"user": cxt.Session().Get("user")}})
+	feed, err := c.FetchUnansweredQuestions(cxt.User().ID)
+	if err != nil {
+		// flash message
+	}
+	c.Render(cxt.ResponseWriter(), framework.ViewModel{BodyTmpl: "questions", Title: "Questions", Bag: framework.Map{"user": cxt.Session().Get("user"), "feed": feed}})
 }
 
 // TopAnswers serves top answers
@@ -51,8 +57,21 @@ func (c *HomeController) topAnswers(cxt framework.Context) {
 
 // PostQuestion posts a new question
 func (c *HomeController) postQuestion(cxt framework.Context) {
-	user1, _ := models.NewUser("test@test.com", "Test User", "")
-	user2, _ := models.NewUser("bashmohandes@live.com", "Mohamed Elsherif", "")
+	user1, ok := cxt.Session().Get("user").(*models.User)
+	if !ok {
+		// flash message
+		cxt.Redirect("/", http.StatusTemporaryRedirect)
+	}
+	email := cxt.Params().ByName("email")
+	if len(email) == 0 {
+		// flash message
+		cxt.Redirect("/", http.StatusTemporaryRedirect)
+	}
+	user2 := c.FindUserByEmail(email)
+	if user2 == nil {
+		// flash message
+		cxt.Redirect("/", http.StatusTemporaryRedirect)
+	}
 	c.Ask(user1, user2, cxt.Request().PostFormValue("question"))
 	c.index(cxt)
 }
