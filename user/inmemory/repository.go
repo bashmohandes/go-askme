@@ -1,6 +1,8 @@
 package user
 
 import (
+	"fmt"
+
 	"github.com/bashmohandes/go-askme/model"
 	"github.com/bashmohandes/go-askme/user"
 )
@@ -25,9 +27,17 @@ func (u *userRepo) Add(user *models.User) (*models.User, error) {
 }
 
 func (u *userRepo) GetByEmail(email string) (*models.User, error) {
-	return u.data[email], nil
+	user, ok := u.data[email]
+	if !ok {
+		return nil, fmt.Errorf("User doesn't exist")
+	}
+	return user, nil
 }
 
 func (u *userRepo) GetByID(id models.UniqueID) (*models.User, error) {
-	return u.byID[id], nil
+	user, ok := u.byID[id]
+	if !ok {
+		return nil, fmt.Errorf("User doesn't exist")
+	}
+	return user, nil
 }

@@ -56,12 +56,12 @@ type AsksUsecase interface {
 	Like(user *models.User, answer *models.Answer) uint
 	Unlike(user *models.User, answer *models.Answer) uint
 	LoadUserFeed(user *models.User) *AnswersFeed
-	FindUserByEmail(email string) *models.User
+	FindUserByEmail(email string) (*models.User, error)
 }
 
 // AnswersUsecase for the registered user
 type AnswersUsecase interface {
-	FetchUnansweredQuestions(userID string) (*QuestionsFeed, error)
+	FetchUnansweredQuestions(email string) (*QuestionsFeed, error)
 	Answer(user *models.User, question *models.Question, answer string) *models.Answer
 }
 
@@ -81,10 +81,11 @@ func NewAsksUsecase(qRepo question.Repository, aRepo answer.Repository, uRepo us
 }
 
 // NewAnswersUsecase creates a new service
-func NewAnswersUsecase(qRepo question.Repository, aRepo answer.Repository) AnswersUsecase {
+func NewAnswersUsecase(qRepo question.Repository, aRepo answer.Repository, uRepo user.Repository) AnswersUsecase {
 	return &userUsecase{
 		questionRepo: qRepo,
 		answerRepo:   aRepo,
+		userRepo:     uRepo,
 	}
 }
 
@@ -96,15 +97,15 @@ func NewAuthUsecase(uRepo user.Repository) AuthUsecase {
 }
 
 // LoadQuestions load questions model
-func (svc *userUsecase) FetchUnansweredQuestions(userID string) (*QuestionsFeed, error) {
-	uqID, err := models.ParseUniqueID(userID)
+func (svc *userUsecase) FetchUnansweredQuestions(email string) (*QuestionsFeed, error) {
+	user, err := svc.userRepo.GetByEmail(email)
 	if err != nil {
 		return nil, err
 	}
 	feed := QuestionsFeed{
 		Items: make([]*QuestionFeedItem, 0),
 	}
-	questions := svc.questionRepo.LoadUnansweredQuestions(uqID)
+	questions := svc.questionRepo.LoadUnansweredQuestions(user.ID)
 	for _, q := range questions {
 		fi := &QuestionFeedItem{
 			AskedAt:    q.CreatedOn,
@@ -143,9 +144,8 @@ func (svc *userUsecase) Answer(user *models.User, question *models.Question, ans
 	return a
 }
 
-func (svc *userUsecase) FindUserByEmail(email string) *models.User {
-	u, _ := svc.userRepo.GetByEmail(email)
-	return u
+func (svc *userUsecase) FindUserByEmail(email string) (*models.User, error) {
+	return svc.userRepo.GetByEmail(email)
 }
 
 func (svc *userUsecase) LoadUserFeed(user *models.User) *AnswersFeed {

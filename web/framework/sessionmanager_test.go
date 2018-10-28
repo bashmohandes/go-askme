@@ -12,7 +12,7 @@ import (
 
 func TestInMemorySessionHeap(t *testing.T) {
 	rand.Seed(time.Now().UnixNano())
-	mem := &inMemStore{
+	mem := &sessionManager{
 		data:            make(map[SessionID]*Session),
 		sessionCookie:   ".session_id",
 		sessionLifetime: time.Second,

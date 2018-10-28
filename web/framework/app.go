@@ -64,6 +64,7 @@ func (app *app) handle(handler RouteHandler, route *Route) httprouter.Handle {
 		}
 		if route.Options.AuthRequired && c.User() == nil {
 			c.Redirect(fmt.Sprintf("/login?redir=%s", r.RequestURI), http.StatusTemporaryRedirect)
+			return
 		}
 		handler(c)
 	}

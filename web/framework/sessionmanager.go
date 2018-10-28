@@ -21,7 +21,7 @@ type sessionheap []SessionID
 // CookieExpireDelete may be set on Cookie.Expire for expiring the given cookie.
 var CookieExpireDelete = time.Date(2009, time.November, 10, 23, 0, 0, 0, time.UTC)
 
-type inMemStore struct {
+type sessionManager struct {
 	sync.Mutex
 	data            map[SessionID]*Session
 	pq              sessionheap
@@ -32,7 +32,7 @@ type inMemStore struct {
 
 // NewInMemorySessionStore creates a new InMemory SessionStore
 func NewInMemorySessionStore(config *Config) SessionManager {
-	mem := &inMemStore{
+	mem := &sessionManager{
 		data:            make(map[SessionID]*Session),
 		sessionCookie:   config.SessionCookie,
 		sessionLifetime: config.SessionMaxLifeTime,
@@ -42,7 +42,7 @@ func NewInMemorySessionStore(config *Config) SessionManager {
 	return mem
 }
 
-func (m *inMemStore) FetchOrCreate(cxt Context) *Session {
+func (m *sessionManager) FetchOrCreate(cxt Context) *Session {
 	r := cxt.Request()
 	w := cxt.ResponseWriter()
 	c, err := r.Cookie(m.sessionCookie)
@@ -77,7 +77,7 @@ func (m *inMemStore) FetchOrCreate(cxt Context) *Session {
 	return session
 }
 
-func (m *inMemStore) Abandon(context Context) {
+func (m *sessionManager) Abandon(context Context) {
 	m.Lock()
 	defer m.Unlock()
 
@@ -94,24 +94,24 @@ func (m *inMemStore) Abandon(context Context) {
 	delete(m.data, context.Session().ID())
 }
 
-func (m *inMemStore) Len() int {
+func (m *sessionManager) Len() int {
 	return len(m.pq)
 }
 
-func (m *inMemStore) Less(i, j int) bool {
+func (m *sessionManager) Less(i, j int) bool {
 	si := m.data[m.pq[i]]
 	sj := m.data[m.pq[j]]
 
 	return si.expires.Before(sj.expires)
 }
 
-func (m *inMemStore) Swap(i, j int) {
+func (m *sessionManager) Swap(i, j int) {
 	m.pq[i], m.pq[j] = m.pq[j], m.pq[i]
 	m.data[m.pq[i]].heapIndex = i
 	m.data[m.pq[j]].heapIndex = j
 }
 
-func (m *inMemStore) Push(x interface{}) {
+func (m *sessionManager) Push(x interface{}) {
 	n := len(m.pq)
 	item := x.(*Session)
 	m.data[item.ID()] = item
@@ -119,7 +119,7 @@ func (m *inMemStore) Push(x interface{}) {
 	m.pq = append(m.pq, item.ID())
 }
 
-func (m *inMemStore) Pop() interface{} {
+func (m *sessionManager) Pop() interface{} {
 	old := m.pq
 	n := len(old)
 	sid := old[n-1]
@@ -130,11 +130,11 @@ func (m *inMemStore) Pop() interface{} {
 	return sess
 }
 
-func (m *inMemStore) min() *Session {
+func (m *sessionManager) min() *Session {
 	return m.data[m.pq[0]]
 }
 
-func (m *inMemStore) GC() {
+func (m *sessionManager) GC() {
 	m.Lock()
 	defer m.Unlock()
 

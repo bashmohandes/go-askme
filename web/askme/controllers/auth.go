@@ -57,7 +57,7 @@ func (c *AuthController) performLogin(cxt framework.Context) {
 	cxt.SetUser(&framework.User{ID: user.ID.String(), Name: user.Name})
 	redir, _ := cxt.Session().Get("redir").(string)
 	if len(redir) == 0 {
-		redir = "/"
+		redir = fmt.Sprintf("/u/%s", user.Email)
 	}
 	cxt.Redirect(redir, http.StatusFound)
 }
