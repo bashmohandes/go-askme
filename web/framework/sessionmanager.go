@@ -16,36 +16,36 @@ type SessionManager interface {
 	Abandon(Context)
 }
 
-type sessionheap []*heapitem
-
-type heapitem struct {
-	sid   SessionID
-	index int
-}
+type sessionheap []SessionID
 
 // CookieExpireDelete may be set on Cookie.Expire for expiring the given cookie.
 var CookieExpireDelete = time.Date(2009, time.November, 10, 23, 0, 0, 0, time.UTC)
 
 type inMemStore struct {
-	sync.RWMutex
-	data map[SessionID]*Session
-	pq   sessionheap
+	sync.Mutex
+	data            map[SessionID]*Session
+	pq              sessionheap
+	sessionLifetime time.Duration
+	sessionCookie   string
+	timer           *time.Timer
 }
 
 // NewInMemorySessionStore creates a new InMemory SessionStore
-func NewInMemorySessionStore() SessionManager {
+func NewInMemorySessionStore(config *Config) SessionManager {
 	mem := &inMemStore{
-		data: make(map[SessionID]*Session),
+		data:            make(map[SessionID]*Session),
+		sessionCookie:   config.SessionCookie,
+		sessionLifetime: config.SessionMaxLifeTime,
 	}
-
 	heap.Init(mem)
+	mem.timer = time.AfterFunc(config.SessionMaxLifeTime, mem.GC)
 	return mem
 }
 
 func (m *inMemStore) FetchOrCreate(cxt Context) *Session {
 	r := cxt.Request()
 	w := cxt.ResponseWriter()
-	c, err := r.Cookie(".session_id")
+	c, err := r.Cookie(m.sessionCookie)
 	var sessionID SessionID
 	if err == http.ErrNoCookie {
 		sessionID = SessionID(uuid.New().String())
@@ -56,23 +56,22 @@ func (m *inMemStore) FetchOrCreate(cxt Context) *Session {
 	m.Lock()
 	defer m.Unlock()
 	session := m.data[sessionID]
-	expires := 2 * time.Minute
+	expires := time.Now().Add(m.sessionLifetime)
 	if session == nil {
-		session = &Session{id: sessionID, data: make(Map), expires: time.Now().Add(expires)}
-		m.data[sessionID] = session
-		heap.Push(m, &heapitem{sid: sessionID})
-		if len(m.pq) == 1 {
-			time.AfterFunc(expires, m.GC)
-		}
+		session = &Session{id: sessionID, data: make(Map), expires: expires}
+		heap.Push(m, session)
+	} else {
+		session.expires = expires
+		heap.Fix(m, session.heapIndex)
 	}
 	http.SetCookie(w, &http.Cookie{
 		HttpOnly: true,
 		Secure:   r.TLS != nil,
-		Name:     ".session_id",
+		Name:     m.sessionCookie,
 		Path:     "/",
 		Value:    string(sessionID),
 		Expires:  session.expires,
-		MaxAge:   int(expires.Seconds()),
+		MaxAge:   int(m.sessionLifetime.Seconds()),
 	})
 
 	return session
@@ -85,19 +84,14 @@ func (m *inMemStore) Abandon(context Context) {
 	http.SetCookie(context.ResponseWriter(), &http.Cookie{
 		HttpOnly: true,
 		Secure:   context.Request().TLS != nil,
-		Name:     ".session_id",
+		Name:     m.sessionCookie,
 		Path:     "/",
 		Value:    "",
 		Expires:  CookieExpireDelete,
 		MaxAge:   -1,
 	})
+	heap.Remove(m, m.data[context.Session().ID()].heapIndex)
 	delete(m.data, context.Session().ID())
-	for i := range m.pq {
-		if m.pq[i].sid == context.Session().ID() {
-			heap.Remove(m, i)
-			return
-		}
-	}
 }
 
 func (m *inMemStore) Len() int {
@@ -105,53 +99,61 @@ func (m *inMemStore) Len() int {
 }
 
 func (m *inMemStore) Less(i, j int) bool {
-	si := m.data[m.pq[i].sid]
-	sj := m.data[m.pq[j].sid]
+	si := m.data[m.pq[i]]
+	sj := m.data[m.pq[j]]
 
 	return si.expires.Before(sj.expires)
 }
 
 func (m *inMemStore) Swap(i, j int) {
 	m.pq[i], m.pq[j] = m.pq[j], m.pq[i]
-	m.pq[i].index = i
-	m.pq[j].index = j
+	m.data[m.pq[i]].heapIndex = i
+	m.data[m.pq[j]].heapIndex = j
 }
 
 func (m *inMemStore) Push(x interface{}) {
 	n := len(m.pq)
-	item := x.(*heapitem)
-	item.index = n
-	m.pq = append(m.pq, item)
+	item := x.(*Session)
+	m.data[item.ID()] = item
+	m.data[item.ID()].heapIndex = n
+	m.pq = append(m.pq, item.ID())
 }
 
 func (m *inMemStore) Pop() interface{} {
 	old := m.pq
 	n := len(old)
-	x := old[n-1]
-	x.index = -1
+	sid := old[n-1]
+	sess := m.data[sid]
+	m.data[sid].heapIndex = -1
 	m.pq = old[0 : n-1]
-	return x
+	delete(m.data, sid)
+	return sess
+}
+
+func (m *inMemStore) min() *Session {
+	return m.data[m.pq[0]]
 }
 
 func (m *inMemStore) GC() {
-	m.RWMutex.Lock()
-	defer m.RWMutex.Unlock()
-	log.Printf("GC called len(m.pq)=%d, len(m.data)=%d", len(m.pq), len(m.data))
-	if len(m.pq) != 0 {
-		topMostTime := m.data[m.pq[0].sid].expires
-		if topMostTime.Before(time.Now()) { // expired
-			log.Printf("GC cleaning session=%s", m.pq[0].sid)
-			delete(m.data, m.pq[0].sid)
-			heap.Pop(m)
+	m.Lock()
+	defer m.Unlock()
+
+	//log.Printf("GC called len(m.pq)=%d, len(m.data)=%d", len(m.pq), len(m.data))
+	for len(m.pq) > 0 {
+		topMostTime := m.min().expires
+		//log.Printf("Session with closes expiry time is %s time %s", m.min().id, topMostTime)
+		if topMostTime.Before(time.Now()) { // expired session
+			delSess := heap.Pop(m).(*Session)
+			log.Printf("Popped Session %s", delSess.id)
+		} else {
+			break
 		}
 	}
 	nextCheck := 10 * time.Second
 	if len(m.pq) > 0 {
-		nextCheckTop := m.data[m.pq[0].sid].expires.Sub(time.Now())
-		if nextCheckTop > nextCheck {
-			nextCheck = nextCheckTop
-		}
+		nextCheck = m.min().expires.Sub(time.Now())
 	}
-	log.Printf("GC scheduled after %v seconds", nextCheck.Seconds())
-	time.AfterFunc(nextCheck, m.GC)
+	//log.Printf("GC scheduled after %v seconds, len(timer.C)=%d", nextCheck.Seconds(), len(m.timer.C))
+
+	m.timer.Reset(nextCheck)
 }

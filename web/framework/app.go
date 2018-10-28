@@ -3,6 +3,7 @@ package framework
 import (
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/julienschmidt/httprouter"
 )
@@ -24,9 +25,11 @@ type app struct {
 
 // Config configuration
 type Config struct {
-	Debug        bool
-	Port         int
-	PublicFolder string
+	Debug              bool
+	Port               int
+	PublicFolder       string
+	SessionMaxLifeTime time.Duration
+	SessionCookie      string
 }
 
 //Start method starts the AskMe App

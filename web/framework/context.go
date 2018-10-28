@@ -1,7 +1,6 @@
 package framework
 
 import (
-	"log"
 	"net/http"
 
 	"github.com/julienschmidt/httprouter"
@@ -42,9 +41,6 @@ func (c *cxt) ResponseWriter() http.ResponseWriter {
 }
 
 func (c *cxt) User() *User {
-	log.Println(len(c.s.data))
-	log.Printf("%T", c.s.data[userKey])
-	log.Println(c.s.data[userKey])
 	u, ok := c.s.Get(userKey).(*User)
 	if !ok {
 		return nil
@@ -62,7 +58,6 @@ func (c *cxt) Redirect(url string, code int) {
 }
 
 func (c *cxt) SetUser(user *User) {
-	log.Printf("SetUser %T:=%v", user, user)
 	c.s.Set(userKey, user)
 }
 

@@ -11,9 +11,10 @@ type SessionID string
 // Session represents web session
 type Session struct {
 	sync.RWMutex
-	id      SessionID
-	data    map[string]interface{}
-	expires time.Time
+	id        SessionID
+	data      map[string]interface{}
+	expires   time.Time
+	heapIndex int
 }
 
 // Set the key value pair specified to the session
