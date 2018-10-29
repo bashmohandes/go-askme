@@ -1,26 +1,10 @@
-{{define "index"}}
+{{define "feed.body"}}
 <div div="container">
     <div class="row">
-        <div class="col-9">
+        <div class="col-9">            
             <div class="row">
                 <div class="col">
-                    <form class="form" action="/questions" method="POST">
-                        <div class="form-group">
-                            <p>
-                                <label for="exampleFormControlTextarea1">Your Question?</label>
-                                <textarea class="form-control form-control-lg" id="question" name="question" rows="2"></textarea>
-                            </p>
-                            <p class="text-right">
-                                <button class="btn btn-primary btn-lg" type="submit">Ask Away</button>
-                            </p>
-                            <hr class="mb-4">
-                        </div>
-                    </form>
-                </div>
-            </div>    
-            <div class="row">
-                <div class="col">
-                {{range .Data.Items}}
+                {{range .Bag.Feed.Items}}
                     <div class="media">
                         <img class="align-self-start mr-3" src="https://via.placeholder.com/64x64" alt="User Image">
                         <div class="media-body">
@@ -35,11 +19,8 @@
         <div class="col-3">
             <div class="card" style="width: 18rem;">
                 <div class="card-body">
-                    <h5 class="card-title">Mohamed Elsherif</h5>
-                    <h6 class="card-subtitle mb-2 text-muted">@Bashmohandes</h6>
-                    <p class="card-text">Egyptian, Software Engineer. You can also tweet me.</p>
-                    <a href="https://twitter.com/bashmohandes" class="card-link">Twitter</a>
-                    <a href="https://fb.com/bashmohandesx" class="card-link">Facebook</a>
+                    <h5 class="card-title">{{.Bag.User.Name}}</h5>
+                    <h6 class="card-subtitle mb-2 text-muted">{{.Bag.User.Email}}</h6>                    
                 </div>
             </div>
         </div>

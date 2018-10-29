@@ -11,9 +11,15 @@ type App struct {
 }
 
 // NewApp creates a new instance of Ask App
-func NewApp(base framework.App, hc *controllers.HomeController, pc *controllers.ProfileController) *App {
+func NewApp(base framework.App,
+	hc *controllers.HomeController,
+	pc *controllers.ProfileController,
+	ac *controllers.AuthController) *App {
 	app := &App{
 		App: base,
 	}
+
+	//app.App.Use(middleware.NewRequestLogger())
+
 	return app
 }

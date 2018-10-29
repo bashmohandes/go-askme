@@ -1,16 +1,24 @@
 package user
 
 import (
+	"fmt"
+	"log"
 	"time"
 
 	"github.com/bashmohandes/go-askme/answer"
 	"github.com/bashmohandes/go-askme/model"
 	"github.com/bashmohandes/go-askme/question"
+	"github.com/bashmohandes/go-askme/user"
 )
 
 type userUsecase struct {
 	questionRepo question.Repository
 	answerRepo   answer.Repository
+	userRepo     user.Repository
+}
+
+type authUsecase struct {
+	userRepo user.Repository
 }
 
 // AnswersFeed type
@@ -48,36 +56,56 @@ type AsksUsecase interface {
 	Like(user *models.User, answer *models.Answer) uint
 	Unlike(user *models.User, answer *models.Answer) uint
 	LoadUserFeed(user *models.User) *AnswersFeed
+	FindUserByEmail(email string) (*models.User, error)
 }
 
 // AnswersUsecase for the registered user
 type AnswersUsecase interface {
-	FetchUnansweredQuestions(userID models.UniqueID) *QuestionsFeed
+	FetchUnansweredQuestions(email string) (*QuestionsFeed, error)
 	Answer(user *models.User, question *models.Question, answer string) *models.Answer
 }
 
+// AuthUsecase defines authentication use cases
+type AuthUsecase interface {
+	Signin(email string, password string) (*models.User, error)
+	Signup(email string, password string, name string) (*models.User, error)
+}
+
 // NewAsksUsecase creates a new service
-func NewAsksUsecase(qRepo question.Repository, aRepo answer.Repository) AsksUsecase {
+func NewAsksUsecase(qRepo question.Repository, aRepo answer.Repository, uRepo user.Repository) AsksUsecase {
 	return &userUsecase{
 		questionRepo: qRepo,
 		answerRepo:   aRepo,
+		userRepo:     uRepo,
 	}
 }
 
 // NewAnswersUsecase creates a new service
-func NewAnswersUsecase(qRepo question.Repository, aRepo answer.Repository) AnswersUsecase {
+func NewAnswersUsecase(qRepo question.Repository, aRepo answer.Repository, uRepo user.Repository) AnswersUsecase {
 	return &userUsecase{
 		questionRepo: qRepo,
 		answerRepo:   aRepo,
+		userRepo:     uRepo,
+	}
+}
+
+// NewAuthUsecase creates a new auth usecase
+func NewAuthUsecase(uRepo user.Repository) AuthUsecase {
+	return &authUsecase{
+		userRepo: uRepo,
 	}
 }
 
 // LoadQuestions load questions model
-func (svc *userUsecase) FetchUnansweredQuestions(userID models.UniqueID) *QuestionsFeed {
+func (svc *userUsecase) FetchUnansweredQuestions(email string) (*QuestionsFeed, error) {
+	user, err := svc.userRepo.GetByEmail(email)
+	if err != nil {
+		return nil, err
+	}
 	feed := QuestionsFeed{
 		Items: make([]*QuestionFeedItem, 0),
 	}
-	questions := svc.questionRepo.LoadUnansweredQuestions(userID)
+	questions := svc.questionRepo.LoadUnansweredQuestions(user.ID)
 	for _, q := range questions {
 		fi := &QuestionFeedItem{
 			AskedAt:    q.CreatedOn,
@@ -88,7 +116,7 @@ func (svc *userUsecase) FetchUnansweredQuestions(userID models.UniqueID) *Questi
 		}
 		feed.Items = append(feed.Items, fi)
 	}
-	return &feed
+	return &feed, nil
 }
 
 // Saves question
@@ -116,6 +144,10 @@ func (svc *userUsecase) Answer(user *models.User, question *models.Question, ans
 	return a
 }
 
+func (svc *userUsecase) FindUserByEmail(email string) (*models.User, error) {
+	return svc.userRepo.GetByEmail(email)
+}
+
 func (svc *userUsecase) LoadUserFeed(user *models.User) *AnswersFeed {
 	return &AnswersFeed{
 		Items: []*AnswerFeedItem{
@@ -135,4 +167,33 @@ func (svc *userUsecase) LoadUserFeed(user *models.User) *AnswersFeed {
 			},
 		},
 	}
+}
+
+func (svc *authUsecase) Signin(email string, password string) (*models.User, error) {
+	user, err := svc.userRepo.GetByEmail(email)
+	if err != nil {
+		log.Println(err.Error())
+	}
+	if user == nil {
+		return nil, fmt.Errorf("Login failed for user %s", email)
+	}
+
+	if user.Verify(password) {
+		return user, nil
+	}
+
+	return nil, fmt.Errorf("Login failed for user %s", email)
+}
+
+func (svc *authUsecase) Signup(email string, password string, name string) (*models.User, error) {
+	user, err := svc.userRepo.GetByEmail(email)
+	if err != nil {
+		log.Println(err.Error())
+	}
+	if user != nil {
+		return nil, fmt.Errorf("User with the same email already exists")
+	}
+
+	user, err = models.NewUser(email, name, password)
+	return svc.userRepo.Add(user)
 }

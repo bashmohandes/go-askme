@@ -6,10 +6,11 @@ import (
 	"github.com/bashmohandes/go-askme/answer/inmemory"
 	"github.com/bashmohandes/go-askme/model"
 	"github.com/bashmohandes/go-askme/question/inmemory"
+	user "github.com/bashmohandes/go-askme/user/inmemory"
 )
 
 func TestAsk(t *testing.T) {
-	sut := NewAsksUsecase(question.NewRepository(), answer.NewRepository())
+	sut := NewAsksUsecase(question.NewRepository(), answer.NewRepository(), user.NewRepository())
 	from := &models.User{}
 	from.ID = models.NewUniqueID()
 	to := &models.User{}
@@ -23,8 +24,8 @@ func TestAsk(t *testing.T) {
 }
 
 func TestLike(t *testing.T) {
-	qRepo, aRepo := question.NewRepository(), answer.NewRepository()
-	userAsks, userAnswers := NewAsksUsecase(qRepo, aRepo), NewAnswersUsecase(qRepo, aRepo)
+	qRepo, aRepo, uRepo := question.NewRepository(), answer.NewRepository(), user.NewRepository()
+	userAsks, userAnswers := NewAsksUsecase(qRepo, aRepo, uRepo), NewAnswersUsecase(qRepo, aRepo, uRepo)
 	user1 := &models.User{}
 	user1.ID = models.NewUniqueID()
 	user2 := &models.User{}
@@ -54,8 +55,8 @@ func TestLike(t *testing.T) {
 }
 
 func TestUnlike(t *testing.T) {
-	qRepo, aRepo := question.NewRepository(), answer.NewRepository()
-	userAsks, userAnswers := NewAsksUsecase(qRepo, aRepo), NewAnswersUsecase(qRepo, aRepo)
+	qRepo, aRepo, uRepo := question.NewRepository(), answer.NewRepository(), user.NewRepository()
+	userAsks, userAnswers := NewAsksUsecase(qRepo, aRepo, uRepo), NewAnswersUsecase(qRepo, aRepo, uRepo)
 	user1 := &models.User{}
 	user1.ID = models.NewUniqueID()
 	user2 := &models.User{}

@@ -7,7 +7,12 @@ import (
 )
 
 func TestNewUser(t *testing.T) {
-	user := NewUser("test@test.com", "Test User")
+	user, err := NewUser("test@test.com", "Test User", "p@ssw0rd")
+	if err != nil {
+		t.Error(err)
+		t.Fail()
+	}
+
 	if user.ID == UniqueID(uuid.Nil) {
 		t.Error("Null ID")
 		t.Fail()
@@ -22,11 +27,16 @@ func TestNewUser(t *testing.T) {
 		t.Error("Wrong email")
 		t.Fail()
 	}
+
+	if user.HashedPassword == nil || len(user.HashedPassword) == 0 {
+		t.Error("Password is nor hashed")
+		t.Fail()
+	}
 }
 
 func TestAskUserQuestion(t *testing.T) {
-	user1 := NewUser("test1@test.com", "Test User1")
-	user2 := NewUser("test2@test.com", "Test User2")
+	user1, _ := NewUser("test1@test.com", "Test User1", "p@ssws0rd")
+	user2, _ := NewUser("test2@test.com", "Test User2", "p@ssw0rd1")
 	question := user1.Ask(user2, "This is a dumb question!")
 
 	if question == nil {
@@ -56,8 +66,8 @@ func TestAskUserQuestion(t *testing.T) {
 }
 
 func TestAnswerQuestion(t *testing.T) {
-	user1 := NewUser("test1@test.com", "Test User1")
-	user2 := NewUser("test2@test.com", "Test User2")
+	user1, _ := NewUser("test1@test.com", "Test User1", "p@ssw0rd")
+	user2, _ := NewUser("test2@test.com", "Test User2", "p@ssw0rd")
 	question := user1.Ask(user2, "This is a dumb question!")
 
 	answer := user2.Answer(question, "This is a snarky answer!")
