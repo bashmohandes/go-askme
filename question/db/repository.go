@@ -18,7 +18,7 @@ func (r *questionsRepo) LoadUnansweredQuestions(userID uint) ([]*models.Question
 		return nil, err
 	}
 	var result []*models.Question
-	err = db.Find(&result).Where(&models.Question{ToUserID: userID, AnswerID: nil}).Error
+	err = db.Where(&models.Question{ToUserID: userID, AnswerID: nil}).Preload("FromUser").Find(&result).Error
 	if err != nil {
 		return nil, err
 	}

@@ -9,7 +9,7 @@ import (
 
 	"github.com/bashmohandes/go-askme/answer/inmemory"
 	"github.com/bashmohandes/go-askme/model"
-	"github.com/bashmohandes/go-askme/question/inmemory"
+	"github.com/bashmohandes/go-askme/question/db"
 	userRepo "github.com/bashmohandes/go-askme/user/db"
 	"github.com/bashmohandes/go-askme/user/usecase"
 	"github.com/bashmohandes/go-askme/web/askme"
