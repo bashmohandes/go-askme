@@ -9,11 +9,9 @@ import (
 type Answer struct {
 	gorm.Model
 	Text       string
-	Likes      uint
-	QuestionID uint
+	QuestionID uint `gorm:"type:bigint REFERENCES questions(id)"`
 	Question   Question
-	LikedBy    map[uint]bool
-	UserID     uint
+	UserID     uint `gorm:"type:bigint REFERENCES users(id)"`
 	User       User
 }
 
@@ -21,32 +19,31 @@ type Answer struct {
 type Question struct {
 	gorm.Model
 	ToUser     User
-	ToUserID   uint
+	ToUserID   uint `gorm:"type:bigint REFERENCES users(id)"`
 	Text       string
 	AnswerID   *uint
 	FromUser   User
-	FromUserID uint
+	FromUserID uint `gorm:"type:bigint REFERENCES users(id)"`
 }
 
 // User type
 type User struct {
 	gorm.Model
-	Email          string
-	Name           string
-	HashedPassword []byte
-	Answers        []Answer
-	Questions      []Question
+	Email             string `gorm:"type:varchar(100);unique_index"`
+	Name              string
+	HashedPassword    []byte
+	Answers           []Answer
+	QuestionsReceived []Question `gorm:"FOREIGNKEY:ToUserID"`
+	QuestionsSent     []Question `gorm:"FOREIGNKEY:FromUserID"`
 }
 
 // Answer the specified question
 func (user *User) Answer(q *Question, answer string) *Answer {
 	return &Answer{
-		Likes:      0,
 		Text:       answer,
 		QuestionID: q.ID,
 		User:       *user,
 		UserID:     user.ID,
-		LikedBy:    make(map[uint]bool),
 	}
 }
 

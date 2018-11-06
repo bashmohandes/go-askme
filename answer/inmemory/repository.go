@@ -1,8 +1,6 @@
 package answer
 
 import (
-	"fmt"
-
 	"github.com/bashmohandes/go-askme/answer"
 	"github.com/bashmohandes/go-askme/model"
 )
@@ -19,26 +17,15 @@ func (r *answersRepo) LoadAnswers(userID uint) []*models.Answer {
 
 // AddLike adds a like to the specified answer
 func (r *answersRepo) AddLike(answer *models.Answer, user *models.User) {
-	a, ok := r.data[answer.ID]
-	if !ok {
-		panic(fmt.Sprintf("Answer with %v doesn't exist.", answer.ID))
-	}
-	if a.LikedBy == nil {
-		a.LikedBy = make(map[uint]bool)
-	}
-	a.LikedBy[user.ID] = true
+
 }
 
 func (r *answersRepo) RemoveLike(answer *models.Answer, user *models.User) {
-	a, ok := r.data[answer.ID]
-	if !ok {
-		panic(fmt.Sprintf("Answer with %v doesn't exist.", answer.ID))
-	}
-	delete(a.LikedBy, user.ID)
+
 }
 
 func (r *answersRepo) GetLikesCount(answer *models.Answer) uint {
-	return uint(len(r.data[answer.ID].LikedBy))
+	return 0
 }
 
 func (r *answersRepo) Add(answer *models.Answer) {

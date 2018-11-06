@@ -47,6 +47,8 @@ This is not meant to depend on any fat frameworks, especially web frameworks, al
   following command
   ```bash
   go get -u -v ./...
+
+  docker run --env-file=.env -p 5432:5432 --rm postgres:latest
  
   go run main.go
   ```

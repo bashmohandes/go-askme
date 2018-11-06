@@ -30,6 +30,10 @@ type Config struct {
 	PublicFolder       string
 	SessionMaxLifeTime time.Duration
 	SessionCookie      string
+	PostgresUser       string
+	PostgresPassword   string
+	PostgresDB         string
+	PostgresHost       string
 }
 
 //Start method starts the AskMe App
