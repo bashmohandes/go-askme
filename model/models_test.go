@@ -2,8 +2,6 @@ package models
 
 import (
 	"testing"
-
-	"github.com/google/uuid"
 )
 
 func TestNewUser(t *testing.T) {
@@ -13,8 +11,8 @@ func TestNewUser(t *testing.T) {
 		t.Fail()
 	}
 
-	if user.ID == UniqueID(uuid.Nil) {
-		t.Error("Null ID")
+	if user.ID != 0 {
+		t.Error("ID should be 0")
 		t.Fail()
 	}
 
@@ -44,18 +42,18 @@ func TestAskUserQuestion(t *testing.T) {
 		t.Fail()
 	}
 
-	if question.ID == EmptyUniqueID {
-		t.Error("Null Question ID")
+	if question.ID != 0 {
+		t.Error("Question ID should be 0")
 		t.Fail()
 	}
 
-	if question.CreatedBy.ID != user1.ID {
-		t.Errorf("Wrong asker %s!= %s", question.CreatedBy.ID, user1.ID)
+	if question.FromUser.ID != user1.ID {
+		t.Errorf("Wrong asker %d!= %d", question.FromUser.ID, user1.ID)
 		t.Fail()
 	}
 
-	if question.To.ID != user2.ID {
-		t.Errorf("Wrong askee %s != %s", question.To.ID, user2.ID)
+	if question.ToUser.ID != user2.ID {
+		t.Errorf("Wrong askee %d != %d", question.ToUser.ID, user2.ID)
 		t.Fail()
 	}
 
@@ -77,12 +75,12 @@ func TestAnswerQuestion(t *testing.T) {
 		t.Fail()
 	}
 
-	if answer.ID == EmptyUniqueID {
-		t.Error("Empty ID")
+	if answer.ID != 0 {
+		t.Error("ID should be 0")
 		t.Fail()
 	}
 
-	if *answer.QuestionID != question.ID {
+	if answer.QuestionID != question.ID {
 		t.Error("Wrong question id")
 		t.Fail()
 	}

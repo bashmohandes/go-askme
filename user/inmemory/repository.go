@@ -9,14 +9,14 @@ import (
 
 type userRepo struct {
 	data map[string]*models.User
-	byID map[models.UniqueID]*models.User
+	byID map[uint]*models.User
 }
 
 // NewRepository creates a new user repo
 func NewRepository() user.Repository {
 	return &userRepo{
 		data: make(map[string]*models.User),
-		byID: make(map[models.UniqueID]*models.User),
+		byID: make(map[uint]*models.User),
 	}
 }
 
@@ -34,7 +34,7 @@ func (u *userRepo) GetByEmail(email string) (*models.User, error) {
 	return user, nil
 }
 
-func (u *userRepo) GetByID(id models.UniqueID) (*models.User, error) {
+func (u *userRepo) GetByID(id uint) (*models.User, error) {
 	user, ok := u.byID[id]
 	if !ok {
 		return nil, fmt.Errorf("User doesn't exist")

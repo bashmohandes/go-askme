@@ -12,75 +12,13 @@ import (
 func TestAsk(t *testing.T) {
 	sut := NewAsksUsecase(question.NewRepository(), answer.NewRepository(), user.NewRepository())
 	from := &models.User{}
-	from.ID = models.NewUniqueID()
+	from.ID = 123
 	to := &models.User{}
-	to.ID = models.NewUniqueID()
+	to.ID = 45
 	question := sut.Ask(from, to, "test question")
-	if question.CreatedBy.ID != from.ID ||
-		question.To.ID != to.ID ||
+	if question.FromUser.ID != from.ID ||
+		question.ToUser.ID != to.ID ||
 		question.Text != "test question" {
 		t.Fail()
-	}
-}
-
-func TestLike(t *testing.T) {
-	qRepo, aRepo, uRepo := question.NewRepository(), answer.NewRepository(), user.NewRepository()
-	userAsks, userAnswers := NewAsksUsecase(qRepo, aRepo, uRepo), NewAnswersUsecase(qRepo, aRepo, uRepo)
-	user1 := &models.User{}
-	user1.ID = models.NewUniqueID()
-	user2 := &models.User{}
-	user2.ID = models.NewUniqueID()
-	to := &models.User{}
-	to.ID = models.NewUniqueID()
-	question := userAsks.Ask(user1, to, "test question")
-	answer := userAnswers.Answer(user1, question, "test answer")
-	count := userAsks.Like(user1, answer)
-
-	if count != 1 {
-		t.Fail()
-		t.Errorf("Expected 1, Actual %v", count)
-	}
-
-	count = userAsks.Like(user2, answer)
-	if count != 2 {
-		t.Fail()
-		t.Errorf("Expected 2, Actual %v", count)
-	}
-
-	count = userAsks.Like(user2, answer)
-	if count != 2 {
-		t.Fail()
-		t.Errorf("Expected 2, Actual %v", count)
-	}
-}
-
-func TestUnlike(t *testing.T) {
-	qRepo, aRepo, uRepo := question.NewRepository(), answer.NewRepository(), user.NewRepository()
-	userAsks, userAnswers := NewAsksUsecase(qRepo, aRepo, uRepo), NewAnswersUsecase(qRepo, aRepo, uRepo)
-	user1 := &models.User{}
-	user1.ID = models.NewUniqueID()
-	user2 := &models.User{}
-	user2.ID = models.NewUniqueID()
-	to := &models.User{}
-	to.ID = models.NewUniqueID()
-	question := userAsks.Ask(user1, to, "test question")
-	answer := userAnswers.Answer(user1, question, "test answer")
-	count := userAsks.Like(user1, answer)
-
-	if count != 1 {
-		t.Fail()
-		t.Errorf("Expected 1, Actual %v", count)
-	}
-
-	count = userAsks.Like(user2, answer)
-	if count != 2 {
-		t.Fail()
-		t.Errorf("Expected 2, Actual %v", count)
-	}
-
-	count = userAsks.Unlike(user1, answer)
-	if count != 1 {
-		t.Fail()
-		t.Errorf("Expected 1, Actual %v", count)
 	}
 }

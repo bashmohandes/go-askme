@@ -1,98 +1,60 @@
 package models
 
 import (
-	"time"
-
-	"github.com/google/uuid"
+	"github.com/jinzhu/gorm"
 	"golang.org/x/crypto/bcrypt"
 )
 
-// UniqueID type
-type UniqueID uuid.UUID
-
-func (u UniqueID) String() string {
-	return uuid.UUID(u).String()
-}
-
-// ParseUniqueID parses string to UniqueID
-func ParseUniqueID(id string) (UniqueID, error) {
-	u, err := uuid.Parse(id)
-	if err != nil {
-		return EmptyUniqueID, err
-	}
-
-	return UniqueID(u), nil
-}
-
-// EmptyUniqueID represents empty UniqueID
-var EmptyUniqueID = UniqueID(uuid.Nil)
-
-// Entity base
-type Entity struct {
-	ID        UniqueID
-	CreatedOn time.Time
-}
-
-// UserEntity base
-type UserEntity struct {
-	Entity
-	CreatedBy *User
-}
-
 //Answer by me
 type Answer struct {
-	UserEntity
+	gorm.Model
 	Text       string
-	Likes      uint
-	QuestionID *UniqueID
-	LikedBy    map[UniqueID]bool
+	QuestionID uint `gorm:"type:int REFERENCES questions(id)"`
+	Question   Question
+	UserID     uint `gorm:"type:int REFERENCES users(id)"`
+	User       User
 }
 
 //Question asked by users
 type Question struct {
-	UserEntity
-	To       *User
-	Text     string
-	AnswerID *UniqueID
+	gorm.Model
+	ToUser     User
+	ToUserID   uint `gorm:"type:int REFERENCES users(id)"`
+	Text       string
+	AnswerID   *uint
+	FromUser   User
+	FromUserID uint `gorm:"type:int REFERENCES users(id)"`
 }
 
 // User type
 type User struct {
-	Entity
-	Email          string
-	Name           string
-	HashedPassword []byte
+	gorm.Model
+	Email             string `gorm:"type:varchar(100);unique_index"`
+	Name              string
+	HashedPassword    []byte
+	Answers           []Answer
+	QuestionsReceived []Question `gorm:"FOREIGNKEY:ToUserID"`
+	QuestionsSent     []Question `gorm:"FOREIGNKEY:FromUserID"`
 }
 
 // Answer the specified question
 func (user *User) Answer(q *Question, answer string) *Answer {
 	return &Answer{
-		UserEntity: UserEntity{
-			Entity: Entity{
-				ID:        NewUniqueID(),
-				CreatedOn: time.Now(),
-			},
-			CreatedBy: user,
-		},
-		Likes:      0,
 		Text:       answer,
-		QuestionID: &q.ID,
-		LikedBy:    make(map[UniqueID]bool),
+		QuestionID: q.ID,
+		User:       *user,
+		UserID:     user.ID,
 	}
 }
 
 // Ask creates a new question that is asked from user to user askee
 func (user *User) Ask(other *User, question string) *Question {
 	return &Question{
-		UserEntity: UserEntity{
-			Entity: Entity{
-				ID:        NewUniqueID(),
-				CreatedOn: time.Now(),
-			},
-			CreatedBy: user,
-		},
-		Text: question,
-		To:   other,
+		Text:       question,
+		ToUser:     *other,
+		ToUserID:   user.ID,
+		FromUser:   *user,
+		FromUserID: user.ID,
 	}
 }
 
@@ -108,17 +70,8 @@ func NewUser(email string, name string, password string) (*User, error) {
 		return nil, err
 	}
 	return &User{
-		Entity: Entity{
-			ID:        NewUniqueID(),
-			CreatedOn: time.Now(),
-		},
 		Email:          email,
 		Name:           name,
 		HashedPassword: hpass,
 	}, nil
-}
-
-// NewUniqueID generates new UniqueID
-func NewUniqueID() UniqueID {
-	return UniqueID(uuid.New())
 }
