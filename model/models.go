@@ -9,9 +9,9 @@ import (
 type Answer struct {
 	gorm.Model
 	Text       string
-	QuestionID uint `gorm:"type:bigint REFERENCES questions(id)"`
+	QuestionID uint `gorm:"type:int REFERENCES questions(id)"`
 	Question   Question
-	UserID     uint `gorm:"type:bigint REFERENCES users(id)"`
+	UserID     uint `gorm:"type:int REFERENCES users(id)"`
 	User       User
 }
 
@@ -19,11 +19,11 @@ type Answer struct {
 type Question struct {
 	gorm.Model
 	ToUser     User
-	ToUserID   uint `gorm:"type:bigint REFERENCES users(id)"`
+	ToUserID   uint `gorm:"type:int REFERENCES users(id)"`
 	Text       string
 	AnswerID   *uint
 	FromUser   User
-	FromUserID uint `gorm:"type:bigint REFERENCES users(id)"`
+	FromUserID uint `gorm:"type:int REFERENCES users(id)"`
 }
 
 // User type

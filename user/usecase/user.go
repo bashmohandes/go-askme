@@ -105,7 +105,10 @@ func (svc *userUsecase) FetchUnansweredQuestions(email string) (*QuestionsFeed, 
 	feed := QuestionsFeed{
 		Items: make([]*QuestionFeedItem, 0),
 	}
-	questions := svc.questionRepo.LoadUnansweredQuestions(user.ID)
+	questions, err := svc.questionRepo.LoadUnansweredQuestions(user.ID)
+	if err != nil {
+		return nil, err
+	}
 	for _, q := range questions {
 		fi := &QuestionFeedItem{
 			AskedAt:    q.CreatedAt,

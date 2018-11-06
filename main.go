@@ -10,7 +10,7 @@ import (
 	"github.com/bashmohandes/go-askme/answer/inmemory"
 	"github.com/bashmohandes/go-askme/model"
 	"github.com/bashmohandes/go-askme/question/inmemory"
-	userRepo "github.com/bashmohandes/go-askme/user/inmemory"
+	userRepo "github.com/bashmohandes/go-askme/user/db"
 	"github.com/bashmohandes/go-askme/user/usecase"
 	"github.com/bashmohandes/go-askme/web/askme"
 	"github.com/bashmohandes/go-askme/web/askme/controllers"
@@ -30,6 +30,7 @@ func main() {
 	container.Provide(framework.NewRouter)
 	container.Provide(framework.NewRenderer)
 	container.Provide(framework.NewInMemorySessionStore)
+	container.Provide(framework.NewConnection)
 	container.Provide(question.NewRepository)
 	container.Provide(answer.NewRepository)
 	container.Provide(userRepo.NewRepository)
