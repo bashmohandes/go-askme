@@ -8,17 +8,12 @@ import (
 )
 
 type answersRepo struct {
-	data map[models.UniqueID]*models.Answer
+	data map[uint]*models.Answer
 }
 
 // LoadAnswers loads the specified user's set of answers
-func (r *answersRepo) LoadAnswers(userID models.UniqueID) []*models.Answer {
+func (r *answersRepo) LoadAnswers(userID uint) []*models.Answer {
 	result := make([]*models.Answer, 0, len(r.data))
-	for k := range r.data {
-		if r.data[k].QuestionID != nil {
-
-		}
-	}
 	return result
 }
 
@@ -29,7 +24,7 @@ func (r *answersRepo) AddLike(answer *models.Answer, user *models.User) {
 		panic(fmt.Sprintf("Answer with %v doesn't exist.", answer.ID))
 	}
 	if a.LikedBy == nil {
-		a.LikedBy = make(map[models.UniqueID]bool)
+		a.LikedBy = make(map[uint]bool)
 	}
 	a.LikedBy[user.ID] = true
 }
@@ -53,6 +48,6 @@ func (r *answersRepo) Add(answer *models.Answer) {
 // NewRepository creates a new repo object
 func NewRepository() answer.Repository {
 	return &answersRepo{
-		data: make(map[models.UniqueID]*models.Answer),
+		data: make(map[uint]*models.Answer),
 	}
 }

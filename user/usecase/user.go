@@ -28,7 +28,7 @@ type AnswersFeed struct {
 
 // AnswerFeedItem type
 type AnswerFeedItem struct {
-	AnswerID   models.UniqueID
+	AnswerID   uint
 	Question   string
 	Answer     string
 	AnsweredAt time.Time
@@ -43,10 +43,10 @@ type QuestionsFeed struct {
 
 // QuestionFeedItem type
 type QuestionFeedItem struct {
-	QuestionID models.UniqueID
+	QuestionID uint
 	Question   string
 	AskedAt    time.Time
-	UserID     models.UniqueID
+	UserID     uint
 	User       string
 }
 
@@ -108,11 +108,11 @@ func (svc *userUsecase) FetchUnansweredQuestions(email string) (*QuestionsFeed, 
 	questions := svc.questionRepo.LoadUnansweredQuestions(user.ID)
 	for _, q := range questions {
 		fi := &QuestionFeedItem{
-			AskedAt:    q.CreatedOn,
+			AskedAt:    q.CreatedAt,
 			QuestionID: q.ID,
 			Question:   q.Text,
-			User:       q.CreatedBy.Name,
-			UserID:     q.CreatedBy.ID,
+			User:       q.FromUser.Name,
+			UserID:     q.FromUserID,
 		}
 		feed.Items = append(feed.Items, fi)
 	}

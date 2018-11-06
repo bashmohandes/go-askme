@@ -54,7 +54,7 @@ func (c *AuthController) performLogin(cxt framework.Context) {
 	}
 
 	cxt.Session().Set("user", user)
-	cxt.SetUser(&framework.User{ID: user.ID.String(), Name: user.Name})
+	cxt.SetUser(&framework.User{ID: string(user.ID), Name: user.Name})
 	redir, _ := cxt.Session().Get("redir").(string)
 	if len(redir) == 0 {
 		redir = fmt.Sprintf("/u/%s", user.Email)
