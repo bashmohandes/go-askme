@@ -21,6 +21,7 @@
         scope: ['openid', 'profile', 'email'],
         nonce: '{{ .Bag.Nonce }}',
     };
+    config['features.registration'] = true;
     new OktaSignIn(config).renderEl(
             { el: '#sign-in-widget' },
             function (res) {
