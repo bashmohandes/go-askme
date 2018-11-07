@@ -29,11 +29,17 @@ var (
 )
 
 // NewOktaController creates OKTA Controller
-func NewOktaController(rtr framework.Router, rndr framework.Renderer, config *framework.Config) *OktaController {
+func NewOktaController(
+	rtr framework.Router,
+	rndr framework.Renderer,
+	config *framework.Config,
+	smgr framework.SessionManager) *OktaController {
+
 	c := &OktaController{
 		Router:   rtr,
 		Renderer: rndr,
 		config:   config,
+		smgr:     smgr,
 	}
 
 	c.Get("/login", c.oktaLogin)
