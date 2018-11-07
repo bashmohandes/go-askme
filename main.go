@@ -39,7 +39,7 @@ func main() {
 	container.Provide(user.NewAuthUsecase)
 	container.Provide(controllers.NewHomeController)
 	container.Provide(controllers.NewProfileController)
-	container.Provide(controllers.NewAuthController)
+	container.Provide(controllers.NewOktaController)
 	container.Provide(askme.NewApp)
 	err := container.Invoke(func(app *askme.App) {
 		err := migrateDB()
@@ -84,6 +84,9 @@ func newConfig() *framework.Config {
 		PostgresPassword:   os.Getenv("POSTGRES_PASSWORD"),
 		PostgresDB:         os.Getenv("POSTGRES_DB"),
 		PostgresHost:       os.Getenv("POSTGRES_HOST"),
+		OktaClient:         os.Getenv("OKTA_CLIENT_ID"),
+		OktaSecret:         os.Getenv("OKTA_CLIENT_SECRET"),
+		OktaIssuer:         os.Getenv("OKTA_ISSUER"),
 	}
 }
 
