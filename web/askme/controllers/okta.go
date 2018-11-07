@@ -49,6 +49,11 @@ func NewOktaController(
 }
 
 func (o *OktaController) oktaLogin(cxt framework.Context) {
+	if isAuthenticated(cxt.Session()) {
+		redir := fmt.Sprintf("/u/%s", cxt.User().ID)
+		cxt.Redirect(redir, http.StatusFound)
+	}
+
 	cxt.Session().Set("redir", cxt.Request().URL.Query().Get("redir"))
 
 	issuerParts, _ := url.Parse(os.Getenv("OKTA_ISSUER"))
@@ -96,10 +101,10 @@ func (o *OktaController) callback(cxt framework.Context) {
 
 	user := getProfileData(cxt.Session())
 
-	userObj := &models.User{Email: user["email"], Name: user["email"]}
+	userObj := &models.User{Email: user["email"], Name: user["name"]}
 
 	cxt.Session().Set("user", userObj)
-	cxt.SetUser(&framework.User{ID: string(user["email"]), Name: user["email"]})
+	cxt.SetUser(&framework.User{ID: string(user["email"]), Name: user["name"]})
 
 	redir, _ := cxt.Session().Get("redir").(string)
 	if len(redir) == 0 {
@@ -122,9 +127,9 @@ func exchangeCode(code string, r *http.Request) Exchange {
 	q.Add("code", code)
 	q.Add("redirect_uri", "http://localhost:8080/authorization-code/callback")
 
-	url := os.Getenv("OKTA_ISSUER") + "/v1/token?" + q.Encode()
+	oktaURL := os.Getenv("OKTA_ISSUER") + "/v1/token?" + q.Encode()
 
-	req, _ := http.NewRequest("POST", url, bytes.NewReader([]byte("")))
+	req, _ := http.NewRequest("POST", oktaURL, bytes.NewReader([]byte("")))
 	h := req.Header
 	h.Add("Authorization", "Basic "+authHeader)
 	h.Add("Accept", "application/json")
@@ -143,7 +148,7 @@ func exchangeCode(code string, r *http.Request) Exchange {
 
 }
 
-func isAuthenticated(r *http.Request, session *framework.Session) bool {
+func isAuthenticated(session *framework.Session) bool {
 	if session.Get("id_token") == nil || session.Get("id_token") == "" {
 		return false
 	}
@@ -171,7 +176,6 @@ func getProfileData(session *framework.Session) map[string]string {
 }
 
 func verifyToken(t string) (*verifier.Jwt, error) {
-	fmt.Println(nonce)
 	tv := map[string]string{}
 	tv["nonce"] = nonce
 	tv["aud"] = os.Getenv("OKTA_CLIENT_ID")
