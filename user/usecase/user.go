@@ -142,7 +142,18 @@ func (svc *userUsecase) Unlike(user *models.User, answer *models.Answer) uint {
 
 func (svc *userUsecase) Answer(user *models.User, question *models.Question, answer string) *models.Answer {
 	a := user.Answer(question, answer)
-	svc.answerRepo.Add(a)
+	a, err := svc.answerRepo.Add(a)
+	if err != nil {
+		log.Println(err.Error())
+		return nil
+	}
+
+	question.AnswerID = &a.ID
+	_, err = svc.questionRepo.Add(question)
+	if err != nil {
+		log.Println(err.Error())
+		return nil
+	}
 	return a
 }
 

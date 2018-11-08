@@ -33,8 +33,12 @@ func (r *questionsRepo) Add(q *models.Question) (*models.Question, error) {
 	if err != nil {
 		return nil, err
 	}
+	if q.ID > 0 {
+		err = db.Save(q).Error
+	} else {
+		err = db.Create(q).Error
+	}
 
-	err = db.Create(q).Error
 	if err != nil {
 		return nil, err
 	}
