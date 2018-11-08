@@ -1,14 +1,7 @@
 {{define "profile.body"}}
 <h1>Questions</h1>
 <div div="container">
-    {{if eq .Bag.User.Email .Bag.ProfileUser.Email}}
-        <div class="row">
-            <div class="col">
-                <p>You can't ask yourself</p>
-                <hr class="mb-4">
-            </div>
-        </div>
-    {{else}}
+    {{if ne .Bag.User.Email .Bag.ProfileUser.Email}}
         <div class="row">
             <div class="col">
                 <form class="form" action="/u/{{.Bag.ProfileUser.Email}}/questions" method="POST">
@@ -25,15 +18,21 @@
                 </form>
             </div>
         </div>
-    {{end}}
-    {{range .Bag.Feed.Items}}
+    {{else}}
         <div class="row">
             <div class="col">
-                <div class="media">
-                    <img class="align-self-start mr-3" src="https://via.placeholder.com/64x64" alt="User Image">
-                    <div class="media-body">
-                        <h5 class="mt-0">From <a href="/u/{{.UserEmail}}/questions">@{{.User}}</a></h5>
-                        <div>{{.Question}}</div>
+                <p>You can't ask yourself</p>
+                <hr class="mb-4">
+            </div>
+        </div>
+        {{range .Bag.Feed.Items}}
+            <div class="row">
+                <div class="col">
+                    <div class="media">
+                        <img class="align-self-start mr-3" src="https://via.placeholder.com/64x64" alt="User Image">
+                        <div class="media-body">
+                            <h5 class="mt-0">From <a href="/u/{{.UserEmail}}/questions">@{{.User}}</a></h5>
+                            <div>{{.Question}}</div>
                         {{if ne .UserEmail $.Bag.User.Email}}
                             <div class="row">
                                 <div class="col">
@@ -52,11 +51,12 @@
                                 </div>
                             </div>
                         {{end}}
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
-        <br>
+            <br>
+        {{end}}
     {{end}}
 </div>
 {{end}}
