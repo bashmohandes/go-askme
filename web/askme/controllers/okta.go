@@ -6,11 +6,14 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/bashmohandes/go-askme/user/usecase"
-	"github.com/bashmohandes/go-askme/web/framework"
 	"io/ioutil"
 	"net/http"
 	"net/url"
 	"os"
+
+	"github.com/bashmohandes/go-askme/model"
+	"github.com/bashmohandes/go-askme/web/framework"
+	"github.com/bashmohandes/go-askme/web/oktautils"
 
 	verifier "github.com/okta/okta-jwt-verifier-golang"
 )
@@ -58,7 +61,7 @@ func (o *OktaController) oktaLogin(cxt framework.Context) {
 	}
 
 	cxt.Session().Set("redir", cxt.Request().URL.Query().Get("redir"))
-
+	nonce, _ = oktautils.GenerateNonce()
 	issuerParts, _ := url.Parse(os.Getenv("OKTA_ISSUER"))
 	baseUrl := issuerParts.Scheme + "://" + issuerParts.Hostname()
 
