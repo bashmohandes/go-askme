@@ -69,6 +69,7 @@ type AnswersUsecase interface {
 type AuthUsecase interface {
 	Signin(email string, password string) (*models.User, error)
 	Signup(email string, password string, name string) (*models.User, error)
+	FindUserByEmail(email string) (*models.User, error)
 }
 
 // NewAsksUsecase creates a new service
@@ -154,14 +155,14 @@ func (svc *userUsecase) FindUserByEmail(email string) (*models.User, error) {
 func (svc *userUsecase) LoadUserFeed(user *models.User) *AnswersFeed {
 	return &AnswersFeed{
 		Items: []*AnswerFeedItem{
-			&AnswerFeedItem{
+			{
 				Question:   "What is your name?",
 				Answer:     "Mohamed Elsherif daaah!",
 				AnsweredAt: time.Now(),
 				Likes:      10,
 				User:       "Anonymous",
 			},
-			&AnswerFeedItem{
+			{
 				Question:   "What is your age?",
 				Answer:     "I would never tell, but it is 35",
 				AnsweredAt: time.Now(),
@@ -199,4 +200,8 @@ func (svc *authUsecase) Signup(email string, password string, name string) (*mod
 
 	user, err = models.NewUser(email, name, password)
 	return svc.userRepo.Add(user)
+}
+
+func (svc *authUsecase) FindUserByEmail(email string) (*models.User, error) {
+	return svc.userRepo.GetByEmail(email)
 }

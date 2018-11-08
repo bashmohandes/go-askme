@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/bashmohandes/go-askme/model"
+	"github.com/bashmohandes/go-askme/user/usecase"
 	"github.com/bashmohandes/go-askme/web/framework"
 	"io/ioutil"
 	"net/http"
@@ -21,6 +22,7 @@ type OktaController struct {
 	framework.Renderer
 	config *framework.Config
 	smgr   framework.SessionManager
+	user.AuthUsecase
 }
 
 var (
@@ -33,13 +35,15 @@ func NewOktaController(
 	rtr framework.Router,
 	rndr framework.Renderer,
 	config *framework.Config,
-	smgr framework.SessionManager) *OktaController {
+	smgr framework.SessionManager,
+	authUC user.AuthUsecase) *OktaController {
 
 	c := &OktaController{
-		Router:   rtr,
-		Renderer: rndr,
-		config:   config,
-		smgr:     smgr,
+		Router:      rtr,
+		Renderer:    rndr,
+		config:      config,
+		smgr:        smgr,
+		AuthUsecase: authUC,
 	}
 
 	c.Get("/login", c.oktaLogin)
@@ -110,6 +114,16 @@ func (o *OktaController) callback(cxt framework.Context) {
 	if len(redir) == 0 {
 		redir = fmt.Sprintf("/u/%s", user["email"])
 	}
+
+	searchResult, err := o.FindUserByEmail(user["email"])
+	if err != nil && searchResult == nil {
+		_, err := o.Signup(user["email"], "defaultPassword", user["name"])
+		if err != nil {
+			cxt.ResponseWriter().Write([]byte(fmt.Sprintf("Fail to create user: %v", user["email"])))
+			return
+		}
+	}
+
 	cxt.Redirect(redir, http.StatusFound)
 }
 
