@@ -20,7 +20,7 @@ func (r *answersRepo) LoadAnswers(userID uint) ([]*models.Answer, error) {
 	}
 
 	var answers []*models.Answer
-	err = db.Preload("User").Preload("Question").Preload("Question.FromUser").Find(&answers).Error
+	err = db.Preload("User").Preload("Question").Preload("Question.FromUser").Order("created_at desc").Find(&answers).Error
 	if err != nil {
 		return nil, err
 	}
