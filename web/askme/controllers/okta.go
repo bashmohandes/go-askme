@@ -5,7 +5,6 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"github.com/bashmohandes/go-askme/model"
 	"github.com/bashmohandes/go-askme/user/usecase"
 	"github.com/bashmohandes/go-askme/web/framework"
 	"io/ioutil"
@@ -105,23 +104,24 @@ func (o *OktaController) callback(cxt framework.Context) {
 
 	user := getProfileData(cxt.Session())
 
-	userObj := &models.User{Email: user["email"], Name: user["name"]}
-
-	cxt.Session().Set("user", userObj)
-	cxt.SetUser(&framework.User{ID: string(user["email"]), Name: user["name"]})
-
-	redir, _ := cxt.Session().Get("redir").(string)
-	if len(redir) == 0 {
-		redir = fmt.Sprintf("/u/%s", user["email"])
-	}
-
 	searchResult, err := o.FindUserByEmail(user["email"])
 	if err != nil && searchResult == nil {
-		_, err := o.Signup(user["email"], "defaultPassword", user["name"])
+		userObj, err := o.Signup(user["email"], "defaultPassword", user["name"])
 		if err != nil {
 			cxt.ResponseWriter().Write([]byte(fmt.Sprintf("Fail to create user: %v", user["email"])))
 			return
 		}
+
+		cxt.Session().Set("user", userObj)
+		cxt.SetUser(&framework.User{ID: string(user["email"]), Name: user["name"]})
+	} else {
+		cxt.Session().Set("user", searchResult)
+		cxt.SetUser(&framework.User{ID: string(user["email"]), Name: user["name"]})
+	}
+
+	redir, _ := cxt.Session().Get("redir").(string)
+	if len(redir) == 0 {
+		redir = fmt.Sprintf("/u/%s", user["email"])
 	}
 
 	cxt.Redirect(redir, http.StatusFound)
