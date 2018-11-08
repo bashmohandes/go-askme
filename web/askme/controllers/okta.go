@@ -5,13 +5,13 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"github.com/bashmohandes/go-askme/user/usecase"
 	"io/ioutil"
 	"net/http"
 	"net/url"
 	"os"
 
-	"github.com/bashmohandes/go-askme/model"
+	"github.com/bashmohandes/go-askme/user/usecase"
+
 	"github.com/bashmohandes/go-askme/web/framework"
 	"github.com/bashmohandes/go-askme/web/oktautils"
 
