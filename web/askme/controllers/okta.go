@@ -77,7 +77,16 @@ func (o *OktaController) oktaLogin(cxt framework.Context) {
 }
 
 func (o *OktaController) callback(cxt framework.Context) {
-	state := cxt.Session().Get("state").(string)
+	state := ""
+	stateObj := cxt.Session().Get("state")
+	if stateObj != nil {
+		state = stateObj.(string)
+	}
+	nonce := ""
+	nonceObj := cxt.Session().Get("nonce")
+	if nonceObj != nil {
+		nonce = nonceObj.(string)
+	}
 	// Check the state that was returned in the query string is the same as the above state
 	if cxt.Request().URL.Query().Get("state") != state {
 		cxt.ResponseWriter().Write([]byte("The state was not as expected"))
@@ -90,7 +99,7 @@ func (o *OktaController) callback(cxt framework.Context) {
 	}
 
 	exchange := o.exchangeCode(cxt.Request().URL.Query().Get("code"), cxt.Request())
-	nonce := cxt.Session().Get("nonce").(string)
+	
 	_, verificationError := o.verifyToken(exchange.IDToken, nonce)
 
 	if verificationError != nil {

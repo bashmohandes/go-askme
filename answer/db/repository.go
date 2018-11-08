@@ -3,16 +3,28 @@ package answer
 import (
 	"github.com/bashmohandes/go-askme/answer"
 	"github.com/bashmohandes/go-askme/model"
+	"github.com/bashmohandes/go-askme/web/framework"
 )
 
 type answersRepo struct {
-	data map[uint]*models.Answer
+	framework.Connection
 }
 
 // LoadAnswers loads the specified user's set of answers
 func (r *answersRepo) LoadAnswers(userID uint) ([]*models.Answer, error) {
-	result := make([]*models.Answer, 0, len(r.data))
-	return result, nil
+	db, err := r.Connect()
+	defer db.Close()
+
+	if err != nil {
+		return nil, err
+	}
+
+	var answers []*models.Answer
+	err = db.Preload("User").Preload("Question").Find(&answers).Error
+	if err != nil {
+		return nil, err
+	}
+	return answers, nil
 }
 
 // AddLike adds a like to the specified answer
@@ -29,13 +41,10 @@ func (r *answersRepo) GetLikesCount(answer *models.Answer) uint {
 }
 
 func (r *answersRepo) Add(answer *models.Answer) (*models.Answer, error) {
-	r.data[answer.ID] = answer
-	return answer, nil
+	return nil, nil
 }
 
 // NewRepository creates a new repo object
-func NewRepository() answer.Repository {
-	return &answersRepo{
-		data: make(map[uint]*models.Answer),
-	}
+func NewRepository(conn framework.Connection) answer.Repository {
+	return &answersRepo{conn}
 }

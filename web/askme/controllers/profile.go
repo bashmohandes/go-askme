@@ -37,7 +37,11 @@ func NewProfileController(
 // Me serves profile page
 func (c *ProfileController) userFeed(cxt framework.Context) {
 	user := cxt.Session().Get("user").(*models.User)
-	feed := c.LoadUserFeed(user)
+	feed, err := c.LoadUserFeed(user)
+	if err != nil {
+		cxt.ResponseWriter().Write([]byte(err.Error()))
+		return
+	}
 	c.Render(
 		cxt.ResponseWriter(),
 		framework.ViewModel{

@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/bashmohandes/go-askme/answer/inmemory"
+	"github.com/bashmohandes/go-askme/answer/db"
 	"github.com/bashmohandes/go-askme/model"
 	"github.com/bashmohandes/go-askme/question/db"
 	userRepo "github.com/bashmohandes/go-askme/user/db"

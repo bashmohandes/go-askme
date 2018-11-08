@@ -34,6 +34,7 @@ type AnswerFeedItem struct {
 	AnsweredAt time.Time
 	Likes      uint
 	User       string
+	Email      string
 }
 
 // QuestionsFeed type
@@ -55,7 +56,7 @@ type AsksUsecase interface {
 	Ask(from *models.User, to *models.User, question string) *models.Question
 	Like(user *models.User, answer *models.Answer) uint
 	Unlike(user *models.User, answer *models.Answer) uint
-	LoadUserFeed(user *models.User) *AnswersFeed
+	LoadUserFeed(user *models.User) (*AnswersFeed, error)
 	FindUserByEmail(email string) (*models.User, error)
 }
 
@@ -152,25 +153,24 @@ func (svc *userUsecase) FindUserByEmail(email string) (*models.User, error) {
 	return svc.userRepo.GetByEmail(email)
 }
 
-func (svc *userUsecase) LoadUserFeed(user *models.User) *AnswersFeed {
-	return &AnswersFeed{
-		Items: []*AnswerFeedItem{
-			{
-				Question:   "What is your name?",
-				Answer:     "Mohamed Elsherif daaah!",
-				AnsweredAt: time.Now(),
-				Likes:      10,
-				User:       "Anonymous",
-			},
-			{
-				Question:   "What is your age?",
-				Answer:     "I would never tell, but it is 35",
-				AnsweredAt: time.Now(),
-				Likes:      1,
-				User:       "Sayed",
-			},
-		},
+func (svc *userUsecase) LoadUserFeed(user *models.User) (*AnswersFeed, error) {
+	answers, err := svc.answerRepo.LoadAnswers(user.ID)
+	if err != nil {
+		return nil, err
 	}
+	feedItems := make([]*AnswerFeedItem, 0, len(answers))
+	for _, a := range answers {
+		feedItems = append(feedItems, &AnswerFeedItem{
+			Question:   a.Question.Text,
+			Answer:     a.Text,
+			AnsweredAt: a.CreatedAt,
+			User:       a.User.Name,
+			Email:      a.User.Email,
+		})
+	}
+	return &AnswersFeed{
+		Items: feedItems,
+	}, nil
 }
 
 func (svc *authUsecase) Signin(email string, password string) (*models.User, error) {
