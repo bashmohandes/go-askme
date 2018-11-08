@@ -8,13 +8,10 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
-	"os"
 
 	"github.com/bashmohandes/go-askme/user/usecase"
-
 	"github.com/bashmohandes/go-askme/web/framework"
 	"github.com/bashmohandes/go-askme/web/oktautils"
-
 	verifier "github.com/okta/okta-jwt-verifier-golang"
 )
 
@@ -55,15 +52,15 @@ func NewOktaController(
 }
 
 func (o *OktaController) oktaLogin(cxt framework.Context) {
-	if isAuthenticated(cxt.Session()) {
+	if o.isAuthenticated(cxt.Session()) {
 		redir := fmt.Sprintf("/u/%s", cxt.User().ID)
 		cxt.Redirect(redir, http.StatusFound)
 	}
 
 	cxt.Session().Set("redir", cxt.Request().URL.Query().Get("redir"))
 	nonce, _ = oktautils.GenerateNonce()
-	issuerParts, _ := url.Parse(os.Getenv("OKTA_ISSUER"))
-	baseUrl := issuerParts.Scheme + "://" + issuerParts.Hostname()
+	issuerParts, _ := url.Parse(o.config.OktaIssuer)
+	baseURL := issuerParts.Scheme + "://" + issuerParts.Hostname()
 
 	o.Render(
 		cxt.ResponseWriter(),
@@ -72,9 +69,9 @@ func (o *OktaController) oktaLogin(cxt framework.Context) {
 			Title:    "Login",
 			HeadTmpl: "login.head",
 			Bag: framework.Map{
-				"BaseUrl":  baseUrl,
-				"ClientId": os.Getenv("OKTA_CLIENT_ID"),
-				"Issuer":   os.Getenv("OKTA_ISSUER"),
+				"BaseUrl":  baseURL,
+				"ClientId": o.config.OktaClient,
+				"Issuer":   o.config.OktaIssuer,
 				"State":    state,
 				"Nonce":    nonce,
 			}})
@@ -92,20 +89,20 @@ func (o *OktaController) callback(cxt framework.Context) {
 		return
 	}
 
-	exchange := exchangeCode(cxt.Request().URL.Query().Get("code"), cxt.Request())
+	exchange := o.exchangeCode(cxt.Request().URL.Query().Get("code"), cxt.Request())
 
-	_, verificationError := verifyToken(exchange.IdToken)
+	_, verificationError := o.verifyToken(exchange.IDToken)
 
 	if verificationError != nil {
 		fmt.Println(verificationError)
 	}
 
 	if verificationError == nil {
-		cxt.Session().Set("id_token", exchange.IdToken)
+		cxt.Session().Set("id_token", exchange.IDToken)
 		cxt.Session().Set("access_token", exchange.AccessToken)
 	}
 
-	user := getProfileData(cxt.Session())
+	user := o.getProfileData(cxt.Session())
 
 	searchResult, err := o.FindUserByEmail(user["email"])
 	if err != nil && searchResult == nil {
@@ -135,16 +132,16 @@ func (o *OktaController) logout(cxt framework.Context) {
 	cxt.Redirect("/", http.StatusFound)
 }
 
-func exchangeCode(code string, r *http.Request) Exchange {
+func (o *OktaController) exchangeCode(code string, r *http.Request) exchange {
 	authHeader := base64.StdEncoding.EncodeToString(
-		[]byte(os.Getenv("OKTA_CLIENT_ID") + ":" + os.Getenv("OKTA_CLIENT_SECRET")))
+		[]byte(o.config.OktaClient + ":" + o.config.OktaSecret))
 
 	q := r.URL.Query()
 	q.Add("grant_type", "authorization_code")
 	q.Add("code", code)
 	q.Add("redirect_uri", "http://localhost:8080/authorization-code/callback")
 
-	oktaURL := os.Getenv("OKTA_ISSUER") + "/v1/token?" + q.Encode()
+	oktaURL := o.config.OktaIssuer + "/v1/token?" + q.Encode()
 
 	req, _ := http.NewRequest("POST", oktaURL, bytes.NewReader([]byte("")))
 	h := req.Header
@@ -158,14 +155,13 @@ func exchangeCode(code string, r *http.Request) Exchange {
 	resp, _ := client.Do(req)
 	body, _ := ioutil.ReadAll(resp.Body)
 	defer resp.Body.Close()
-	var exchange Exchange
+	var exchange exchange
 	json.Unmarshal(body, &exchange)
 
 	return exchange
-
 }
 
-func isAuthenticated(session *framework.Session) bool {
+func (o *OktaController) isAuthenticated(session *framework.Session) bool {
 	if session.Get("id_token") == nil || session.Get("id_token") == "" {
 		return false
 	}
@@ -173,12 +169,12 @@ func isAuthenticated(session *framework.Session) bool {
 	return true
 }
 
-func getProfileData(session *framework.Session) map[string]string {
+func (o *OktaController) getProfileData(session *framework.Session) map[string]string {
 	m := make(map[string]string)
 
-	reqUrl := os.Getenv("OKTA_ISSUER") + "/v1/userinfo"
+	reqURL := o.config.OktaIssuer + "/v1/userinfo"
 
-	req, _ := http.NewRequest("GET", reqUrl, bytes.NewReader([]byte("")))
+	req, _ := http.NewRequest("GET", reqURL, bytes.NewReader([]byte("")))
 	h := req.Header
 	h.Add("Authorization", "Bearer "+session.Get("access_token").(string))
 	h.Add("Accept", "application/json")
@@ -192,12 +188,12 @@ func getProfileData(session *framework.Session) map[string]string {
 	return m
 }
 
-func verifyToken(t string) (*verifier.Jwt, error) {
+func (o *OktaController) verifyToken(t string) (*verifier.Jwt, error) {
 	tv := map[string]string{}
 	tv["nonce"] = nonce
-	tv["aud"] = os.Getenv("OKTA_CLIENT_ID")
+	tv["aud"] = o.config.OktaClient
 	jv := verifier.JwtVerifier{
-		Issuer:           os.Getenv("OKTA_ISSUER"),
+		Issuer:           o.config.OktaIssuer,
 		ClaimsToValidate: tv,
 	}
 
@@ -214,12 +210,12 @@ func verifyToken(t string) (*verifier.Jwt, error) {
 	return nil, fmt.Errorf("token could not be verified: %s", "")
 }
 
-type Exchange struct {
+type exchange struct {
 	Error            string `json:"error,omitempty"`
 	ErrorDescription string `json:"error_description,omitempty"`
 	AccessToken      string `json:"access_token,omitempty"`
 	TokenType        string `json:"token_type,omitempty"`
 	ExpiresIn        int    `json:"expires_in,omitempty"`
 	Scope            string `json:"scope,omitempty"`
-	IdToken          string `json:"id_token,omitempty"`
+	IDToken          string `json:"id_token,omitempty"`
 }
