@@ -21,10 +21,11 @@
         scope: ['openid', 'profile', 'email'],
         nonce: '{{ .Bag.Nonce }}',
     };
-    config.idps= [        
-        {type: 'LINKEDIN', id: '0oahb773w8aejB4S00h7'}        
+    config.idps= [
+        {type: 'LINKEDIN', id: '0oahb773w8aejB4S00h7'},
+        {type: 'FACEBOOK', id: '0oahbcu6vr4hc50qm0h7'}
     ]
-    config['features.registration'] = true;    
+    config['features.registration'] = true;
     new OktaSignIn(config).renderEl(
             { el: '#sign-in-widget' },
             function (res) {
