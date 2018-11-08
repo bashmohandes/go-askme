@@ -24,11 +24,6 @@ type OktaController struct {
 	user.AuthUsecase
 }
 
-var (
-	state = "ApplicationState"
-	nonce = "NonceNotSetYet"
-)
-
 // NewOktaController creates OKTA Controller
 func NewOktaController(
 	rtr framework.Router,
@@ -58,7 +53,10 @@ func (o *OktaController) oktaLogin(cxt framework.Context) {
 	}
 
 	cxt.Session().Set("redir", cxt.Request().URL.Query().Get("redir"))
-	nonce, _ = oktautils.GenerateNonce()
+	nonce, _ := oktautils.GenerateNonce()
+	state, _ := oktautils.GenerateNonce()
+	cxt.Session().Set("nonce", nonce)
+	cxt.Session().Set("state", state)
 	issuerParts, _ := url.Parse(o.config.OktaIssuer)
 	baseURL := issuerParts.Scheme + "://" + issuerParts.Hostname()
 	r := cxt.Request()
@@ -79,6 +77,7 @@ func (o *OktaController) oktaLogin(cxt framework.Context) {
 }
 
 func (o *OktaController) callback(cxt framework.Context) {
+	state := cxt.Session().Get("state").(string)
 	// Check the state that was returned in the query string is the same as the above state
 	if cxt.Request().URL.Query().Get("state") != state {
 		cxt.ResponseWriter().Write([]byte("The state was not as expected"))
@@ -91,8 +90,8 @@ func (o *OktaController) callback(cxt framework.Context) {
 	}
 
 	exchange := o.exchangeCode(cxt.Request().URL.Query().Get("code"), cxt.Request())
-
-	_, verificationError := o.verifyToken(exchange.IDToken)
+	nonce := cxt.Session().Get("nonce").(string)
+	_, verificationError := o.verifyToken(exchange.IDToken, nonce)
 
 	if verificationError != nil {
 		fmt.Println(verificationError)
@@ -189,7 +188,7 @@ func (o *OktaController) getProfileData(session *framework.Session) map[string]s
 	return m
 }
 
-func (o *OktaController) verifyToken(t string) (*verifier.Jwt, error) {
+func (o *OktaController) verifyToken(t, nonce string) (*verifier.Jwt, error) {
 	tv := map[string]string{}
 	tv["nonce"] = nonce
 	tv["aud"] = o.config.OktaClient
