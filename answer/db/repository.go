@@ -41,7 +41,18 @@ func (r *answersRepo) GetLikesCount(answer *models.Answer) uint {
 }
 
 func (r *answersRepo) Add(answer *models.Answer) (*models.Answer, error) {
-	return nil, nil
+	db, err := r.Connect()
+	defer db.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	err = db.Create(answer).Error
+	if err != nil {
+		return nil, err
+	}
+
+	return answer, nil
 }
 
 // NewRepository creates a new repo object

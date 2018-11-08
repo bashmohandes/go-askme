@@ -32,6 +32,10 @@ func (r *questionsRepo) Add(q *models.Question) (*models.Question, error) {
 	return q, nil
 }
 
+func (r *questionsRepo) GetByID(questionId uint) (*models.Question, error) {
+	return nil, nil
+}
+
 // NewRepository creates a new repo object
 func NewRepository() question.Repository {
 	return &questionsRepo{

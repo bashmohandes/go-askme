@@ -1,7 +1,9 @@
 package controllers
 
 import (
+	"fmt"
 	"net/http"
+	"strconv"
 
 	"github.com/bashmohandes/go-askme/model"
 	"github.com/bashmohandes/go-askme/user/usecase"
@@ -31,13 +33,22 @@ func NewProfileController(
 	c.Get("/u/:email", c.userFeed).Authenticated()
 	c.Get("/u/:email/questions", c.questions).Authenticated()
 	c.Post("/u/:email/questions", c.postQuestion).Authenticated()
+	c.Post("/u/:email/answer/:questionId", c.postAnswer).Authenticated()
 	return c
 }
 
 // Me serves profile page
 func (c *ProfileController) userFeed(cxt framework.Context) {
-	user := cxt.Session().Get("user").(*models.User)
-	feed, err := c.LoadUserFeed(user)
+	email := cxt.Params().ByName("email")
+	if len(email) == 0 {
+		// flash message
+		cxt.Redirect("/", http.StatusTemporaryRedirect)
+	}
+	profileUser, err := c.FindUserByEmail(email)
+	if err != nil {
+		// flash message
+	}
+	feed, err := c.LoadUserFeed(profileUser)
 	if err != nil {
 		cxt.ResponseWriter().Write([]byte(err.Error()))
 		return
@@ -48,8 +59,9 @@ func (c *ProfileController) userFeed(cxt framework.Context) {
 			BodyTmpl: "feed.body",
 			Title:    "Home",
 			Bag: framework.Map{
-				"User": user,
-				"Feed": feed}})
+				"User":        cxt.Session().Get("user"),
+				"ProfileUser": profileUser,
+				"Feed":        feed}})
 }
 
 // TopAnswers serves top answers
@@ -63,7 +75,7 @@ func (c *ProfileController) questions(cxt framework.Context) {
 	if err != nil {
 		// flash message
 	}
-	feed, err := c.FetchUnansweredQuestions(email)
+	feed, err := c.FetchUnansweredQuestions(profileUser)
 	if err != nil {
 		// flash message
 	}
@@ -96,5 +108,28 @@ func (c *ProfileController) postQuestion(cxt framework.Context) {
 		cxt.Redirect("/", http.StatusTemporaryRedirect)
 	}
 	c.Ask(user1, user2, cxt.Request().PostFormValue("question"))
-	c.userFeed(cxt)
+	c.questions(cxt)
+}
+
+func (c *ProfileController) postAnswer(cxt framework.Context) {
+	user, ok := cxt.Session().Get("user").(*models.User)
+	if !ok {
+		// flash message
+		cxt.Redirect("/", http.StatusTemporaryRedirect)
+	}
+	questionId64, err := strconv.ParseUint(cxt.Params().ByName("questionId"), 10, 32)
+	if err != nil {
+		// parse error
+	}
+	questionId := uint(questionId64)
+	question, err := c.FetchQuestionById(questionId)
+	if err != nil {
+		// flash message
+		cxt.Redirect("/", http.StatusTemporaryRedirect)
+	}
+	c.Answer(user, question, cxt.Request().PostFormValue("answer"))
+
+	email := cxt.Params().ByName("email")
+	redir := fmt.Sprintf("/u/%s", email)
+	cxt.Redirect(redir, http.StatusFound)
 }

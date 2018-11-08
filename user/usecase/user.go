@@ -47,7 +47,7 @@ type QuestionFeedItem struct {
 	QuestionID uint
 	Question   string
 	AskedAt    time.Time
-	UserID     uint
+	UserEmail  string
 	User       string
 }
 
@@ -62,7 +62,8 @@ type AsksUsecase interface {
 
 // AnswersUsecase for the registered user
 type AnswersUsecase interface {
-	FetchUnansweredQuestions(email string) (*QuestionsFeed, error)
+	FetchUnansweredQuestions(user *models.User) (*QuestionsFeed, error)
+	FetchQuestionById(questionId uint) (*models.Question, error)
 	Answer(user *models.User, question *models.Question, answer string) *models.Answer
 }
 
@@ -99,11 +100,7 @@ func NewAuthUsecase(uRepo user.Repository) AuthUsecase {
 }
 
 // LoadQuestions load questions model
-func (svc *userUsecase) FetchUnansweredQuestions(email string) (*QuestionsFeed, error) {
-	user, err := svc.userRepo.GetByEmail(email)
-	if err != nil {
-		return nil, err
-	}
+func (svc *userUsecase) FetchUnansweredQuestions(user *models.User) (*QuestionsFeed, error) {
 	feed := QuestionsFeed{
 		Items: make([]*QuestionFeedItem, 0),
 	}
@@ -117,7 +114,7 @@ func (svc *userUsecase) FetchUnansweredQuestions(email string) (*QuestionsFeed, 
 			QuestionID: q.ID,
 			Question:   q.Text,
 			User:       q.FromUser.Name,
-			UserID:     q.FromUserID,
+			UserEmail:  q.FromUser.Email,
 		}
 		feed.Items = append(feed.Items, fi)
 	}
@@ -147,6 +144,11 @@ func (svc *userUsecase) Answer(user *models.User, question *models.Question, ans
 	a := user.Answer(question, answer)
 	svc.answerRepo.Add(a)
 	return a
+}
+
+func (svc *userUsecase) FetchQuestionById(questionId uint) (*models.Question, error) {
+	q, error := svc.questionRepo.GetByID(questionId)
+	return q, error
 }
 
 func (svc *userUsecase) FindUserByEmail(email string) (*models.User, error) {

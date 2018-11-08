@@ -42,6 +42,20 @@ func (r *questionsRepo) Add(q *models.Question) (*models.Question, error) {
 	return q, nil
 }
 
+func (r *questionsRepo) GetByID(id uint) (*models.Question, error) {
+	db, err := r.Connect()
+	defer db.Close()
+	if err != nil {
+		return nil, err
+	}
+	var question models.Question
+	err = db.Find(&question, id).Error
+	if err != nil {
+		return nil, err
+	}
+	return &question, nil
+}
+
 // NewRepository creates a new repo object
 func NewRepository(conn framework.Connection) question.Repository {
 	return &questionsRepo{conn}
