@@ -12,7 +12,7 @@
     var config = {};
     config.baseUrl = "{{ .Bag.BaseUrl }}";
     config.clientId = "{{ .Bag.ClientId }}";
-    config.redirectUri = "http://localhost:8080/authorization-code/callback";
+    config.redirectUri = "{{ .Bag.RedirectUrl }}";
     config.authParams = {
         issuer: "{{ .Bag.Issuer }}",
         responseType: 'code',

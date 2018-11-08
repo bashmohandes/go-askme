@@ -61,7 +61,7 @@ func (o *OktaController) oktaLogin(cxt framework.Context) {
 	nonce, _ = oktautils.GenerateNonce()
 	issuerParts, _ := url.Parse(o.config.OktaIssuer)
 	baseURL := issuerParts.Scheme + "://" + issuerParts.Hostname()
-
+	r := cxt.Request()
 	o.Render(
 		cxt.ResponseWriter(),
 		framework.ViewModel{
@@ -69,11 +69,12 @@ func (o *OktaController) oktaLogin(cxt framework.Context) {
 			Title:    "Login",
 			HeadTmpl: "login.head",
 			Bag: framework.Map{
-				"BaseUrl":  baseURL,
-				"ClientId": o.config.OktaClient,
-				"Issuer":   o.config.OktaIssuer,
-				"State":    state,
-				"Nonce":    nonce,
+				"BaseUrl":     baseURL,
+				"ClientId":    o.config.OktaClient,
+				"Issuer":      o.config.OktaIssuer,
+				"State":       state,
+				"Nonce":       nonce,
+				"RedirectUrl": fmt.Sprintf("http://%s/authorization-code/callback", r.Host),
 			}})
 }
 
@@ -139,7 +140,7 @@ func (o *OktaController) exchangeCode(code string, r *http.Request) exchange {
 	q := r.URL.Query()
 	q.Add("grant_type", "authorization_code")
 	q.Add("code", code)
-	q.Add("redirect_uri", "http://localhost:8080/authorization-code/callback")
+	q.Add("redirect_uri", fmt.Sprintf("http://%s/authorization-code/callback", r.Host))
 
 	oktaURL := o.config.OktaIssuer + "/v1/token?" + q.Encode()
 
