@@ -28,13 +28,15 @@ type AnswersFeed struct {
 
 // AnswerFeedItem type
 type AnswerFeedItem struct {
-	AnswerID   uint
-	Question   string
-	Answer     string
-	AnsweredAt time.Time
-	Likes      uint
-	User       string
-	Email      string
+	AnswerID            uint
+	QuestionAuthor      string
+	QuestionAuthorEmail string
+	Question            string
+	Answer              string
+	AnsweredAt          time.Time
+	Likes               uint
+	User                string
+	Email               string
 }
 
 // QuestionsFeed type
@@ -174,11 +176,13 @@ func (svc *userUsecase) LoadUserFeed(user *models.User) (*AnswersFeed, error) {
 	feedItems := make([]*AnswerFeedItem, 0, len(answers))
 	for _, a := range answers {
 		feedItems = append(feedItems, &AnswerFeedItem{
-			Question:   a.Question.Text,
-			Answer:     a.Text,
-			AnsweredAt: a.CreatedAt,
-			User:       a.User.Name,
-			Email:      a.User.Email,
+			Question:            a.Question.Text,
+			QuestionAuthor:      a.Question.FromUser.Name,
+			QuestionAuthorEmail: a.Question.FromUser.Email,
+			Answer:              a.Text,
+			AnsweredAt:          a.CreatedAt,
+			User:                a.User.Name,
+			Email:               a.User.Email,
 		})
 	}
 	return &AnswersFeed{
