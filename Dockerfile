@@ -10,7 +10,7 @@ RUN go mod download
 
 # Import the code from the context.
 COPY . .
-RUN go get -u github.com/gobuffalo/packr/...
+RUN go get github.com/gobuffalo/packr/...
 RUN packr install -v .
 EXPOSE 8080
 CMD ["go-askme"]
