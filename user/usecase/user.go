@@ -3,6 +3,7 @@ package user
 import (
 	"fmt"
 	"log"
+	"strings"
 	"time"
 
 	"github.com/bashmohandes/go-askme/answer"
@@ -175,13 +176,23 @@ func (svc *userUsecase) LoadUserFeed(user *models.User) (*AnswersFeed, error) {
 	}
 	feedItems := make([]*AnswerFeedItem, 0, len(answers))
 	for _, a := range answers {
+		answeredBy := a.User.Name
+		if strings.EqualFold(user.Email, a.User.Email) {
+			answeredBy = "You"
+		}
+
+		askedBy := a.Question.FromUser.Name
+		if strings.EqualFold(user.Email, a.Question.FromUser.Email) {
+			askedBy = "You"
+		}
+
 		feedItems = append(feedItems, &AnswerFeedItem{
 			Question:            a.Question.Text,
-			QuestionAuthor:      a.Question.FromUser.Name,
+			QuestionAuthor:      askedBy,
 			QuestionAuthorEmail: a.Question.FromUser.Email,
 			Answer:              a.Text,
 			AnsweredAt:          a.CreatedAt,
-			User:                a.User.Name,
+			User:                answeredBy,
 			Email:               a.User.Email,
 		})
 	}
