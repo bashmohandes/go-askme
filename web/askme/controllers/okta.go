@@ -40,13 +40,13 @@ func NewOktaController(
 		AuthUsecase: authUC,
 	}
 
-	c.Get("/login", c.oktaLogin)
+	c.Get("/login", c.login)
 	c.Get("/authorization-code/callback", c.callback)
 	c.Get("/logout", c.logout)
 	return c
 }
 
-func (o *OktaController) oktaLogin(cxt framework.Context) {
+func (o *OktaController) login(cxt framework.Context) {
 	if o.isAuthenticated(cxt.Session()) {
 		redir := fmt.Sprintf("/u/%s", cxt.User().ID)
 		cxt.Redirect(redir, http.StatusFound)
@@ -99,7 +99,7 @@ func (o *OktaController) callback(cxt framework.Context) {
 	}
 
 	exchange := o.exchangeCode(cxt.Request().URL.Query().Get("code"), cxt.Request())
-	
+
 	_, verificationError := o.verifyToken(exchange.IDToken, nonce)
 
 	if verificationError != nil {
@@ -137,7 +137,15 @@ func (o *OktaController) callback(cxt framework.Context) {
 }
 
 func (o *OktaController) logout(cxt framework.Context) {
-	o.smgr.Abandon(cxt)
+	defer o.smgr.Abandon(cxt)
+	idtokenObj := cxt.Session().Get("id_token")
+	if idtokenObj != nil {
+		idtoken := idtokenObj.(string)
+		r := cxt.Request()
+		oktaURL := fmt.Sprintf("%s/v1/logout?id_token_hint=%s&post_logout_redirect_uri=http://%s", o.config.OktaIssuer, idtoken, r.Host)
+		cxt.Redirect(oktaURL, http.StatusTemporaryRedirect)
+		return
+	}
 	cxt.Redirect("/", http.StatusFound)
 }
 
