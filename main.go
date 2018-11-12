@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/bashmohandes/go-askme/answer/inmemory"
+	"github.com/bashmohandes/go-askme/answer/db"
 	"github.com/bashmohandes/go-askme/model"
 	"github.com/bashmohandes/go-askme/question/db"
 	userRepo "github.com/bashmohandes/go-askme/user/db"
@@ -39,7 +39,7 @@ func main() {
 	container.Provide(user.NewAuthUsecase)
 	container.Provide(controllers.NewHomeController)
 	container.Provide(controllers.NewProfileController)
-	container.Provide(controllers.NewAuthController)
+	container.Provide(controllers.NewOktaController)
 	container.Provide(askme.NewApp)
 	err := container.Invoke(func(app *askme.App) {
 		err := migrateDB()
@@ -74,7 +74,7 @@ func newConfig() *framework.Config {
 		log.Fatalf("Incorrect 'SESSION_MAX_LIFE_TIME' format: %v\n", err)
 	}
 
-	return &framework.Config{
+	config := &framework.Config{
 		Debug:              debug,
 		PublicFolder:       os.Getenv("PUBLIC_FOLDER"),
 		Port:               port,
@@ -84,7 +84,29 @@ func newConfig() *framework.Config {
 		PostgresPassword:   os.Getenv("POSTGRES_PASSWORD"),
 		PostgresDB:         os.Getenv("POSTGRES_DB"),
 		PostgresHost:       os.Getenv("POSTGRES_HOST"),
+		OktaClient:         os.Getenv("OKTA_CLIENT_ID"),
+		OktaSecret:         os.Getenv("OKTA_CLIENT_SECRET"),
+		OktaIssuer:         os.Getenv("OKTA_ISSUER"),				
+	}	
+
+	linkedInIdp := os.Getenv("OKTA_SOCIAL_LINKEDIN_IDP")
+	facebookIdp := os.Getenv("OKTA_SOCIAL_FACEBOOK_IDP")
+
+	if linkedInIdp != "" {
+		config.OktaSocialIdps = append(config.OktaSocialIdps, framework.OktaSocialIdp{
+			ID: linkedInIdp,
+			Name: "LINKEDIN",
+		})
 	}
+
+	if facebookIdp != "" {
+		config.OktaSocialIdps = append(config.OktaSocialIdps, framework.OktaSocialIdp{
+			ID: facebookIdp,
+			Name: "FACEBOOK",
+		})
+	}
+
+	return config
 }
 
 func migrateDB() error {

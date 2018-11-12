@@ -7,8 +7,9 @@ os:
 
 services:
   - docker
+  - postgresql
 
 before_install:
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then docker build -t go-askme . ; fi
-  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then docker run -d --rm --env-file=.env -p 8080:8080 go-askme ; fi
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then docker run -d --rm -e PORT='true' -e DEBUG_MODE='true' -e PUBLIC_FOLDER='web/askme/public' -e SESSION_MAX_LIFE_TIME='20m' -e SESSION_COOKIE='.sessionid' -e POSTGRES_USER='postgres' -e POSTGRES_PASSWORD='' -e POSTGRES_DB='askmedb' -e POSTGRES_HOST='localhost' -p 8080:8080 go-askme ; fi
   

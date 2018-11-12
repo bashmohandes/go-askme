@@ -36,6 +36,8 @@ This is not meant to depend on any fat frameworks, especially web frameworks, al
 2. Buffalo's [box](https://github.com/gobuffalo/packr) asset management
 3. Google's [UUID](https://github.com/google/uuid) package
 4. joho/godotenv [godotenv](https://github.com/joho/godotenv)
+5. [gorm](github.com/jinzhu/gorm)
+6. [Okta Jwt Verifier](github.com/okta/okta-jwt-verifier-golang)
 
 ## Build and Run
 
@@ -43,12 +45,18 @@ This is not meant to depend on any fat frameworks, especially web frameworks, al
 * Make sure your GOPATH environment variable
 * (Optional) Install Docker
 * Clone the repo on your machine
+* Create a new .env file using the .env.dist as a template
+    * Fill in the missing secrets suitable for your environment
+    * Never check in the .env file, it is already included in .gitignore, and never add actual secrets in .env.dist
+* There are two authentications methods supported
+    * Basic Username / Password Auth
+        * if you want to use this mode, make sure that AuthController is used in the ask.go instead of OktaController
+    * [Okta](https://developer.okta.com) based auth
+        * You will need to sign up for Okta developer account, more information on setting up mentioned below
 * From root of the repo on your terminal run the
   following command
   ```bash
-  go get -u -v ./...
-
-  docker run --env-file=.env -p 5432:5432 --rm postgres:latest
+  docker-compose -f docker-local.yml up
  
   go run main.go
   ```
@@ -58,4 +66,35 @@ This is not meant to depend on any fat frameworks, especially web frameworks, al
 
   docker run --env-file=.env --rm -p 8080:8080 go-askme
   ```
+* (Optional) Use docker compose
+  ```bash
+  docker-compose build
+
+  docker-compose up
+  ```
+  
 Then from a browser window, navigate to http://localhost:8080
+
+
+# Setting up Okta Developer Account
+For more up to date information make sure to read through [Okta developer docs](https://developer.okta.com/use_cases/authentication/)
+
+1. Sign up for a new Okta developer account
+2. Create a new Application
+    1. Choose Web as an application type
+3. Add a login redirect URI
+    1. For local development add
+    http://localhost:8080/authorization-code/callback
+4. Add a logout redirect URI
+    1. For local development add
+    http://localhost:8080	
+5. Accept other defaults, then Save
+6. Copy generated ClientID, Client Secret, and set them to corresponding OKTA_CLIENT_ID, OKTA_CLIENT_SECRET in your .env file
+7. Navigate to API > Authorization Servers
+    1. Copy the default Authorization Server, and set it to OKTA_ISSUER in your .env file
+    2. Click on the *Trusted Origins* tab
+        1. Add a new origin, for local development add http://localhost:8080 as both a Redirect & CORS
+8. To enable Registration, navigate to Users > Registration
+    1. Click on Enable Registration, fill in the details you need
+    2. Make sure to set the *Default redirect* to http://localhost:8080
+

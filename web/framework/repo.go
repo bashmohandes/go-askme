@@ -25,5 +25,10 @@ func NewConnection(config *Config) Connection {
 func (r *repo) Connect() (*gorm.DB, error) {
 	config := r.config
 	connStr := fmt.Sprintf("postgresql://%s:%s@%s:%d/%s?sslmode=disable", config.PostgresUser, config.PostgresPassword, config.PostgresHost, 5432, config.PostgresDB)
-	return gorm.Open("postgres", connStr)
+	db, err := gorm.Open("postgres", connStr)
+	if err != nil {
+		return nil, err
+	}
+	db.LogMode(false)
+	return db, nil
 }

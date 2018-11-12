@@ -3,6 +3,7 @@ package user
 import (
 	"fmt"
 	"log"
+	"strings"
 	"time"
 
 	"github.com/bashmohandes/go-askme/answer"
@@ -28,12 +29,15 @@ type AnswersFeed struct {
 
 // AnswerFeedItem type
 type AnswerFeedItem struct {
-	AnswerID   uint
-	Question   string
-	Answer     string
-	AnsweredAt time.Time
-	Likes      uint
-	User       string
+	AnswerID            uint
+	QuestionAuthor      string
+	QuestionAuthorEmail string
+	Question            string
+	Answer              string
+	AnsweredAt          time.Time
+	Likes               uint
+	User                string
+	Email               string
 }
 
 // QuestionsFeed type
@@ -46,7 +50,7 @@ type QuestionFeedItem struct {
 	QuestionID uint
 	Question   string
 	AskedAt    time.Time
-	UserID     uint
+	UserEmail  string
 	User       string
 }
 
@@ -55,13 +59,14 @@ type AsksUsecase interface {
 	Ask(from *models.User, to *models.User, question string) *models.Question
 	Like(user *models.User, answer *models.Answer) uint
 	Unlike(user *models.User, answer *models.Answer) uint
-	LoadUserFeed(user *models.User) *AnswersFeed
+	LoadUserFeed(user *models.User) (*AnswersFeed, error)
 	FindUserByEmail(email string) (*models.User, error)
 }
 
 // AnswersUsecase for the registered user
 type AnswersUsecase interface {
-	FetchUnansweredQuestions(email string) (*QuestionsFeed, error)
+	FetchUnansweredQuestions(user *models.User) (*QuestionsFeed, error)
+	FetchQuestionById(questionId uint) (*models.Question, error)
 	Answer(user *models.User, question *models.Question, answer string) *models.Answer
 }
 
@@ -69,6 +74,7 @@ type AnswersUsecase interface {
 type AuthUsecase interface {
 	Signin(email string, password string) (*models.User, error)
 	Signup(email string, password string, name string) (*models.User, error)
+	FindUserByEmail(email string) (*models.User, error)
 }
 
 // NewAsksUsecase creates a new service
@@ -97,11 +103,7 @@ func NewAuthUsecase(uRepo user.Repository) AuthUsecase {
 }
 
 // LoadQuestions load questions model
-func (svc *userUsecase) FetchUnansweredQuestions(email string) (*QuestionsFeed, error) {
-	user, err := svc.userRepo.GetByEmail(email)
-	if err != nil {
-		return nil, err
-	}
+func (svc *userUsecase) FetchUnansweredQuestions(user *models.User) (*QuestionsFeed, error) {
 	feed := QuestionsFeed{
 		Items: make([]*QuestionFeedItem, 0),
 	}
@@ -115,7 +117,7 @@ func (svc *userUsecase) FetchUnansweredQuestions(email string) (*QuestionsFeed, 
 			QuestionID: q.ID,
 			Question:   q.Text,
 			User:       q.FromUser.Name,
-			UserID:     q.FromUserID,
+			UserEmail:  q.FromUser.Email,
 		}
 		feed.Items = append(feed.Items, fi)
 	}
@@ -143,33 +145,60 @@ func (svc *userUsecase) Unlike(user *models.User, answer *models.Answer) uint {
 
 func (svc *userUsecase) Answer(user *models.User, question *models.Question, answer string) *models.Answer {
 	a := user.Answer(question, answer)
-	svc.answerRepo.Add(a)
+	a, err := svc.answerRepo.Add(a)
+	if err != nil {
+		log.Println(err.Error())
+		return nil
+	}
+
+	question.AnswerID = &a.ID
+	_, err = svc.questionRepo.Add(question)
+	if err != nil {
+		log.Println(err.Error())
+		return nil
+	}
 	return a
+}
+
+func (svc *userUsecase) FetchQuestionById(questionId uint) (*models.Question, error) {
+	q, error := svc.questionRepo.GetByID(questionId)
+	return q, error
 }
 
 func (svc *userUsecase) FindUserByEmail(email string) (*models.User, error) {
 	return svc.userRepo.GetByEmail(email)
 }
 
-func (svc *userUsecase) LoadUserFeed(user *models.User) *AnswersFeed {
-	return &AnswersFeed{
-		Items: []*AnswerFeedItem{
-			&AnswerFeedItem{
-				Question:   "What is your name?",
-				Answer:     "Mohamed Elsherif daaah!",
-				AnsweredAt: time.Now(),
-				Likes:      10,
-				User:       "Anonymous",
-			},
-			&AnswerFeedItem{
-				Question:   "What is your age?",
-				Answer:     "I would never tell, but it is 35",
-				AnsweredAt: time.Now(),
-				Likes:      1,
-				User:       "Sayed",
-			},
-		},
+func (svc *userUsecase) LoadUserFeed(user *models.User) (*AnswersFeed, error) {
+	answers, err := svc.answerRepo.LoadAnswers(user.ID)
+	if err != nil {
+		return nil, err
 	}
+	feedItems := make([]*AnswerFeedItem, 0, len(answers))
+	for _, a := range answers {
+		answeredBy := a.User.Name
+		if strings.EqualFold(user.Email, a.User.Email) {
+			answeredBy = "You"
+		}
+
+		askedBy := a.Question.FromUser.Name
+		if strings.EqualFold(user.Email, a.Question.FromUser.Email) {
+			askedBy = "You"
+		}
+
+		feedItems = append(feedItems, &AnswerFeedItem{
+			Question:            a.Question.Text,
+			QuestionAuthor:      askedBy,
+			QuestionAuthorEmail: a.Question.FromUser.Email,
+			Answer:              a.Text,
+			AnsweredAt:          a.CreatedAt,
+			User:                answeredBy,
+			Email:               a.User.Email,
+		})
+	}
+	return &AnswersFeed{
+		Items: feedItems,
+	}, nil
 }
 
 func (svc *authUsecase) Signin(email string, password string) (*models.User, error) {
@@ -199,4 +228,8 @@ func (svc *authUsecase) Signup(email string, password string, name string) (*mod
 
 	user, err = models.NewUser(email, name, password)
 	return svc.userRepo.Add(user)
+}
+
+func (svc *authUsecase) FindUserByEmail(email string) (*models.User, error) {
+	return svc.userRepo.GetByEmail(email)
 }

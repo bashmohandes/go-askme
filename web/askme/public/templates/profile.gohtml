@@ -1,34 +1,62 @@
 {{define "profile.body"}}
 <h1>Questions</h1>
 <div div="container">
-    <div class="row">
-        <div class="col">
-            <form class="form" action="/u/{{.Bag.ProfileUser.Email}}/questions" method="POST">
-                <div class="form-group">
-                    <p>
-                        <label for="exampleFormControlTextarea1">Your Question?</label>
-                        <textarea class="form-control form-control-lg" id="question" name="question" rows="2"></textarea>
-                    </p>
-                    <p class="text-right">
-                        <button class="btn btn-primary btn-lg" type="submit">Ask Away</button>
-                    </p>
-                    <hr class="mb-4">
-                </div>
-            </form>
+    {{if ne .Bag.User.Email .Bag.ProfileUser.Email}}
+        <div class="row">
+            <div class="col">
+                <form class="form" action="/u/{{.Bag.ProfileUser.Email}}/questions" method="POST">
+                    <div class="form-group">
+                        <p>
+                            <label for="exampleFormControlTextarea1">Your Question?</label>
+                            <textarea class="form-control form-control-lg" id="question" name="question" rows="2"></textarea>
+                        </p>
+                        <p class="text-right">
+                            <button class="btn btn-primary btn-lg" type="submit">Ask Away</button>
+                        </p>
+                        <hr class="mb-4">
+                    </div>
+                </form>
+            </div>
         </div>
-    </div>
-    <div class="row">
-        <div class="col">
-            {{range .Bag.Feed.Items}}
-                <div class="media">
-                    <img class="align-self-start mr-3" src="https://via.placeholder.com/64x64" alt="User Image">
-                    <div class="media-body">
-                    <h5 class="mt-0">@{{.User}}</h5>
-                    {{.Question}}
+    {{else}}
+        <div class="row">
+            <div class="col">
+                <p>You can't ask yourself</p>
+                <hr class="mb-4">
+            </div>
+        </div>
+        {{range .Bag.Feed.Items}}
+            <div class="row">
+                <div class="col">
+                    <div class="media">
+                        <img class="align-self-start mr-3" src="https://via.placeholder.com/64x64" alt="User Image">
+                        <div class="media-body">
+                            <h5 class="mt-0">From <a href="/u/{{.UserEmail}}/questions">@{{.User}}</a></h5>
+                            <div>{{.Question}}</div>
+                        {{if ne .UserEmail $.Bag.User.Email}}
+                            <div class="row">
+                                <div class="col">
+                                    <form class="form" action="/u/{{$.Bag.ProfileUser.Email}}/answer/{{.QuestionID}}" method="POST">
+                                        <div class="form-group">
+                                            <p>
+                                                <label for="exampleFormControlTextarea1">Your Answer?</label>
+                                                <textarea class="form-control form-control-lg" id="answer" name="answer" rows="2"></textarea>
+                                            </p>
+                                            <p class="text-right">
+                                                <button class="btn btn-primary btn-lg" type="submit">Answer Away</button>
+                                            </p>
+                                            <hr class="mb-4">
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        {{end}}
+                        </div>
                     </div>
                 </div>
-            {{end}}
-        </div>
-    </div>
+            </div>
+            <br>
+        {{end}}
+    {{end}}
 </div>
 {{end}}

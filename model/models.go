@@ -21,7 +21,7 @@ type Question struct {
 	ToUser     User
 	ToUserID   uint `gorm:"type:int REFERENCES users(id)"`
 	Text       string
-	AnswerID   *uint
+	AnswerID   *uint `gorm:"default: null"`
 	FromUser   User
 	FromUserID uint `gorm:"type:int REFERENCES users(id)"`
 }

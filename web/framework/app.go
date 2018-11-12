@@ -34,6 +34,16 @@ type Config struct {
 	PostgresPassword   string
 	PostgresDB         string
 	PostgresHost       string
+	OktaClient         string
+	OktaSecret         string
+	OktaIssuer         string
+	OktaSocialIdps     []OktaSocialIdp
+}
+
+// OktaSocialIdp configuration
+type OktaSocialIdp struct {
+	ID   string
+	Name string
 }
 
 //Start method starts the AskMe App

@@ -1,0 +1,36 @@
+{{define "login.head"}}
+<!-- Custom styles for this template -->
+<link href="/public/css/login.css" rel="stylesheet">
+<script src="https://ok1static.oktacdn.com/assets/js/sdk/okta-signin-widget/2.13.0/js/okta-sign-in.min.js" type="text/javascript"></script>
+<link href="https://ok1static.oktacdn.com/assets/js/sdk/okta-signin-widget/2.13.0/css/okta-sign-in.min.css" type="text/css" rel="stylesheet"/>
+<link href="https://ok1static.oktacdn.com/assets/js/sdk/okta-signin-widget/2.13.0/css/okta-theme.css" type="text/css" rel="stylesheet"/>
+{{end}}
+
+{{define "login.body"}}
+<div id="sign-in-widget"></div>
+<script type="text/javascript">
+    var config = {};
+    config.baseUrl = "{{ .Bag.BaseUrl }}";
+    config.clientId = "{{ .Bag.ClientId }}";
+    config.redirectUri = "{{ .Bag.RedirectUrl }}";
+    config.authParams = {
+        issuer: "{{ .Bag.Issuer }}",
+        responseType: 'code',
+        state: "{{ .Bag.State }}" || false,
+        display: 'page',
+        scope: ['openid', 'profile', 'email'],
+        nonce: '{{ .Bag.Nonce }}',
+    };
+    config.idps= [
+        {{range .Bag.SocialIdps}}
+            {type: '{{.Name}}', id: '{{.ID}}'},        
+        {{end}}
+    ]
+    config['features.registration'] = true;
+    new OktaSignIn(config).renderEl(
+            { el: '#sign-in-widget' },
+            function (res) {
+            }
+    );
+</script>
+{{end}}
