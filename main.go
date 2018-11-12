@@ -74,7 +74,7 @@ func newConfig() *framework.Config {
 		log.Fatalf("Incorrect 'SESSION_MAX_LIFE_TIME' format: %v\n", err)
 	}
 
-	return &framework.Config{
+	config := &framework.Config{
 		Debug:              debug,
 		PublicFolder:       os.Getenv("PUBLIC_FOLDER"),
 		Port:               port,
@@ -86,8 +86,27 @@ func newConfig() *framework.Config {
 		PostgresHost:       os.Getenv("POSTGRES_HOST"),
 		OktaClient:         os.Getenv("OKTA_CLIENT_ID"),
 		OktaSecret:         os.Getenv("OKTA_CLIENT_SECRET"),
-		OktaIssuer:         os.Getenv("OKTA_ISSUER"),
+		OktaIssuer:         os.Getenv("OKTA_ISSUER"),				
+	}	
+
+	linkedInIdp := os.Getenv("OKTA_SOCIAL_LINKEDIN_IDP")
+	facebookIdp := os.Getenv("OKTA_SOCIAL_FACEBOOK_IDP")
+
+	if linkedInIdp != "" {
+		config.OktaSocialIdps = append(config.OktaSocialIdps, framework.OktaSocialIdp{
+			ID: linkedInIdp,
+			Name: "LINKEDIN",
+		})
 	}
+
+	if facebookIdp != "" {
+		config.OktaSocialIdps = append(config.OktaSocialIdps, framework.OktaSocialIdp{
+			ID: facebookIdp,
+			Name: "FACEBOOK",
+		})
+	}
+
+	return config
 }
 
 func migrateDB() error {

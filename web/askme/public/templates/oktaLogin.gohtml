@@ -22,8 +22,9 @@
         nonce: '{{ .Bag.Nonce }}',
     };
     config.idps= [
-        {type: 'LINKEDIN', id: '0oahb773w8aejB4S00h7'},
-        {type: 'FACEBOOK', id: '0oahbcu6vr4hc50qm0h7'}
+        {{range .Bag.SocialIdps}}
+            {type: '{{.Name}}', id: '{{.ID}}'},        
+        {{end}}
     ]
     config['features.registration'] = true;
     new OktaSignIn(config).renderEl(

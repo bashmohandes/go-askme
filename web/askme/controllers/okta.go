@@ -73,6 +73,7 @@ func (o *OktaController) login(cxt framework.Context) {
 				"State":       state,
 				"Nonce":       nonce,
 				"RedirectUrl": fmt.Sprintf("http://%s/authorization-code/callback", r.Host),
+				"SocialIdps":  o.config.OktaSocialIdps,
 			}})
 }
 
