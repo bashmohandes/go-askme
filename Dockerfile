@@ -10,7 +10,14 @@ RUN go mod download
 
 # Import the code from the context.
 COPY . .
+
+# clean any windows file endings
+RUN apt-get update && apt-get install -y dos2unix
+RUN find . -type f -exec dos2unix {} \;
+
+# install with packr to embed resources
 RUN go get github.com/gobuffalo/packr/...
 RUN packr install -v .
+
 EXPOSE 8080
-CMD ["go-askme"]
+CMD [ "go-askme" ]
