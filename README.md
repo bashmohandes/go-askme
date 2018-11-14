@@ -42,7 +42,8 @@ This is not meant to depend on any fat frameworks, especially web frameworks, al
 ## Build and Run
 
 * Install Go
-* Make sure your GOPATH environment variable
+* Make sure your GOPATH environment variable is set correctly
+* Clone the project in any directory outside of your $GOPATH location, this will ensure go modules work as expected, and all dependencies will be downloaded on first run
 * (Optional) Install Docker
 * Clone the repo on your machine
 * Create a new .env file using the .env.dist as a template
@@ -98,3 +99,5 @@ For more up to date information make sure to read through [Okta developer docs](
     1. Click on Enable Registration, fill in the details you need
     2. Make sure to set the *Default redirect* to http://localhost:8080
 
+# Want to Contribute?
+All contributions are welcomed, check [here for details](CONTRIBUTING.md)
