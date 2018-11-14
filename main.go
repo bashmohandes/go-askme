@@ -118,6 +118,7 @@ func migrateDB() error {
 	if err != nil {
 		log.Fatalf("%v", err)
 	}
+	db.LogMode(config.Debug)
 	db.AutoMigrate(&models.User{}, &models.Question{}, &models.Answer{})
 	log.Print("Auto Migration Ended")
 	return nil

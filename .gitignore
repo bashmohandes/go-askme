@@ -17,3 +17,6 @@ cmd/askme/debug
 
 # env file
 .env
+
+debug
+go-askme

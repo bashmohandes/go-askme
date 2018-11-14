@@ -29,6 +29,6 @@ func (r *repo) Connect() (*gorm.DB, error) {
 	if err != nil {
 		return nil, err
 	}
-	db.LogMode(false)
+	db.LogMode(config.Debug)
 	return db, nil
 }
