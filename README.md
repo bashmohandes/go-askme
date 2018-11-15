@@ -36,8 +36,8 @@ This is not meant to depend on any fat frameworks, especially web frameworks, al
 2. Buffalo's [box](https://github.com/gobuffalo/packr) asset management
 3. Google's [UUID](https://github.com/google/uuid) package
 4. joho/godotenv [godotenv](https://github.com/joho/godotenv)
-5. [gorm](github.com/jinzhu/gorm)
-6. [Okta Jwt Verifier](github.com/okta/okta-jwt-verifier-golang)
+5. [gorm](https://github.com/jinzhu/gorm)
+6. [Okta Jwt Verifier](https://github.com/okta/okta-jwt-verifier-golang)
 
 ## Build and Run
 
