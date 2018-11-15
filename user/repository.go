@@ -1,6 +1,6 @@
 package user
 
-import "github.com/bashmohandes/go-askme/model"
+import "github.com/bashmohandes/go-askme/models"
 
 // Repository defines the basic repo operations
 type Repository interface {

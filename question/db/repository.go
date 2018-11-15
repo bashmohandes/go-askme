@@ -1,7 +1,7 @@
 package question
 
 import (
-	"github.com/bashmohandes/go-askme/model"
+	"github.com/bashmohandes/go-askme/models"
 	"github.com/bashmohandes/go-askme/question"
 	"github.com/bashmohandes/go-askme/web/framework"
 )

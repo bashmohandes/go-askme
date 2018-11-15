@@ -1,7 +1,7 @@
 package user
 
 import (
-	"github.com/bashmohandes/go-askme/model"
+	"github.com/bashmohandes/go-askme/models"
 	"github.com/bashmohandes/go-askme/user"
 	"github.com/bashmohandes/go-askme/web/framework"
 )

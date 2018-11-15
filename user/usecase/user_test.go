@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/bashmohandes/go-askme/answer/inmemory"
-	"github.com/bashmohandes/go-askme/model"
+	"github.com/bashmohandes/go-askme/models"
 	"github.com/bashmohandes/go-askme/question/inmemory"
 	user "github.com/bashmohandes/go-askme/user/inmemory"
 )

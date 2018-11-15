@@ -1,6 +1,6 @@
 package answer
 
-import "github.com/bashmohandes/go-askme/model"
+import "github.com/bashmohandes/go-askme/models"
 
 // Repository represents the basic answer repo functionality
 type Repository interface {

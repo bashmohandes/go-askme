@@ -1,6 +1,6 @@
 package question
 
-import "github.com/bashmohandes/go-askme/model"
+import "github.com/bashmohandes/go-askme/models"
 
 // Repository interface
 type Repository interface {
