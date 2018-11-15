@@ -2,7 +2,7 @@ package answer
 
 import (
 	"github.com/bashmohandes/go-askme/answer"
-	"github.com/bashmohandes/go-askme/model"
+	"github.com/bashmohandes/go-askme/models"
 )
 
 type answersRepo struct {

@@ -3,7 +3,7 @@ package user
 import (
 	"fmt"
 
-	"github.com/bashmohandes/go-askme/model"
+	"github.com/bashmohandes/go-askme/models"
 	"github.com/bashmohandes/go-askme/user"
 )
 

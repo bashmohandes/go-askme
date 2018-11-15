@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/bashmohandes/go-askme/answer/db"
-	"github.com/bashmohandes/go-askme/model"
+	"github.com/bashmohandes/go-askme/models"
 	"github.com/bashmohandes/go-askme/question/db"
 	userRepo "github.com/bashmohandes/go-askme/user/db"
 	"github.com/bashmohandes/go-askme/user/usecase"
