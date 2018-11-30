@@ -35,6 +35,7 @@ type User struct {
 	Answers           []Answer
 	QuestionsReceived []Question `gorm:"FOREIGNKEY:ToUserID"`
 	QuestionsSent     []Question `gorm:"FOREIGNKEY:FromUserID"`
+	FollowedUsers     []*User    `gorm:"many2many:followers;association_jointable_foreignkey:follower_user_id"`
 }
 
 // Answer the specified question
@@ -56,6 +57,16 @@ func (user *User) Ask(other *User, question string) *Question {
 		FromUser:   *user,
 		FromUserID: user.ID,
 	}
+}
+
+// Follow the specified user
+func (user *User) Follow(other *User) {
+	user.FollowedUsers = append(user.FollowedUsers, other)
+}
+
+// Unfollow the specified user
+func (user *User) Unfollow(other *User) {
+
 }
 
 // Verify user password

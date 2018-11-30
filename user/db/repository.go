@@ -57,3 +57,16 @@ func (u *userRepo) GetByID(id uint) (*models.User, error) {
 	}
 	return &user, nil
 }
+
+func (u *userRepo) Persist(user *models.User) error {
+	db, err := u.Connect()
+	if err != nil {
+		return err
+	}
+	err = db.Save(user).Error
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

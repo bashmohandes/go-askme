@@ -17,11 +17,15 @@
                 </div>
             </div>
         </div>
-        <div class="col-3">
+        <div class="col-3">        
             <div class="card" style="width: 18rem;">
                 <div class="card-body">
-                    <h5 class="card-title">{{.Bag.User.Name}}</h5>
-                    <h6 class="card-subtitle mb-2 text-muted">{{.Bag.User.Email}}</h6>                    
+                    <h5 class="card-title">{{.Bag.ProfileUser.Name}}</h5>
+                    <h6 class="card-subtitle mb-2 text-muted">{{.Bag.ProfileUser.Email}}</h6>
+                    <form method="POST" action="/u/{{.Bag.ProfileUser.Email}}/follow">
+                        <input type="hidden" name="toFollow" value="{{.Bag.ProfileUser.Email}}"/>
+                        <button type="submit" class="btn btn-outline-primary">+Follow</button>
+                    </form>
                 </div>
             </div>
         </div>

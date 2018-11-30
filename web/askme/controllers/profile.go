@@ -34,6 +34,7 @@ func NewProfileController(
 	c.Get("/u/:email/questions", c.questions).Authenticated()
 	c.Post("/u/:email/questions", c.postQuestion).Authenticated()
 	c.Post("/u/:email/answer/:questionId", c.postAnswer).Authenticated()
+	c.Post("/u/:email/follow", c.follow).Authenticated()
 	return c
 }
 
@@ -117,12 +118,12 @@ func (c *ProfileController) postAnswer(cxt framework.Context) {
 		// flash message
 		cxt.Redirect("/", http.StatusTemporaryRedirect)
 	}
-	questionId64, err := strconv.ParseUint(cxt.Params().ByName("questionId"), 10, 32)
+	questionID64, err := strconv.ParseUint(cxt.Params().ByName("questionId"), 10, 32)
 	if err != nil {
 		// parse error
 	}
-	questionId := uint(questionId64)
-	question, err := c.FetchQuestionById(questionId)
+	questionID := uint(questionID64)
+	question, err := c.FetchQuestionById(questionID)
 	if err != nil {
 		// flash message
 		cxt.Redirect("/", http.StatusTemporaryRedirect)
@@ -132,4 +133,27 @@ func (c *ProfileController) postAnswer(cxt framework.Context) {
 	email := cxt.Params().ByName("email")
 	redir := fmt.Sprintf("/u/%s", email)
 	cxt.Redirect(redir, http.StatusFound)
+}
+
+func (c *ProfileController) follow(cxt framework.Context) {
+	user, ok := cxt.Session().Get("user").(*models.User)
+	if !ok {
+		cxt.Redirect("/", http.StatusTemporaryRedirect)
+	}
+
+	toFollowEmail := cxt.Request().PostFormValue("toFollowEmail")
+	if toFollowEmail == "" {
+		// parse error
+	}
+	toFollow, err := c.FindUserByEmail(toFollowEmail)
+	if err != nil {
+		// flash error
+	}
+
+	err = c.Follow(user, toFollow)
+	if err != nil {
+		// flash error
+	}
+
+	cxt.Redirect("/", http.StatusSeeOther)
 }

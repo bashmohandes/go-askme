@@ -61,12 +61,13 @@ type AsksUsecase interface {
 	Unlike(user *models.User, answer *models.Answer) uint
 	LoadUserFeed(user *models.User) (*AnswersFeed, error)
 	FindUserByEmail(email string) (*models.User, error)
+	Follow(user *models.User, toFollow *models.User) error
 }
 
 // AnswersUsecase for the registered user
 type AnswersUsecase interface {
 	FetchUnansweredQuestions(user *models.User) (*QuestionsFeed, error)
-	FetchQuestionById(questionId uint) (*models.Question, error)
+	FetchQuestionById(questionID uint) (*models.Question, error)
 	Answer(user *models.User, question *models.Question, answer string) *models.Answer
 }
 
@@ -131,6 +132,11 @@ func (svc *userUsecase) Ask(from *models.User, to *models.User, question string)
 	return q
 }
 
+func (svc *userUsecase) Follow(user *models.User, toFollow *models.User) error {
+	user.Follow(toFollow)
+	return svc.userRepo.Persist(user)
+}
+
 // Likes a question
 func (svc *userUsecase) Like(user *models.User, answer *models.Answer) uint {
 	svc.answerRepo.AddLike(answer, user)
@@ -160,8 +166,8 @@ func (svc *userUsecase) Answer(user *models.User, question *models.Question, ans
 	return a
 }
 
-func (svc *userUsecase) FetchQuestionById(questionId uint) (*models.Question, error) {
-	q, error := svc.questionRepo.GetByID(questionId)
+func (svc *userUsecase) FetchQuestionById(questionID uint) (*models.Question, error) {
+	q, error := svc.questionRepo.GetByID(questionID)
 	return q, error
 }
 
