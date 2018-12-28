@@ -6,6 +6,7 @@ import (
 
 	"github.com/bashmohandes/go-askme/user/usecase"
 	"github.com/bashmohandes/go-askme/web/framework"
+	"github.com/bashmohandes/go-askme/web/middleware/csrf"
 )
 
 // AuthController manages authentication actions
@@ -30,9 +31,11 @@ func NewAuthController(
 	}
 
 	c.Get("/login", c.login)
-	c.Post("/login", c.performLogin)
+	c.Post("/login",
+		framework.AdaptRoute(c.performLogin, csrf.RequireCSRF))
 	c.Get("/signup", c.signup)
-	c.Post("/signup", c.performSignup)
+	c.Post("/signup",
+		framework.AdaptRoute(c.performSignup, csrf.RequireCSRF))
 	c.Get("/logout", c.logout).Authenticated()
 
 	return c
@@ -40,7 +43,14 @@ func NewAuthController(
 
 func (c *AuthController) login(cxt framework.Context) {
 	cxt.Session().Set("redir", cxt.Request().URL.Query().Get("redir"))
-	c.Render(cxt.ResponseWriter(), framework.ViewModel{BodyTmpl: "login.body", Title: "Login", HeadTmpl: "login.head", Bag: framework.Map{}})
+	c.Render(
+		cxt.ResponseWriter(),
+		framework.ViewModel{
+			BodyTmpl: "standardlogin.body",
+			Title: "Login", HeadTmpl: "standardlogin.head",
+			Bag: framework.Map{
+				csrf.TemplateTag: csrf.TemplateField(cxt),
+			}})
 }
 
 func (c *AuthController) performLogin(cxt framework.Context) {
@@ -63,7 +73,15 @@ func (c *AuthController) performLogin(cxt framework.Context) {
 }
 
 func (c *AuthController) signup(cxt framework.Context) {
-	c.Render(cxt.ResponseWriter(), framework.ViewModel{BodyTmpl: "signup.body", Title: "Signup", HeadTmpl: "signup.head", Bag: framework.Map{}})
+	c.Render(
+		cxt.ResponseWriter(),
+		framework.ViewModel{
+			BodyTmpl: "signup.body",
+			Title: "Signup",
+			HeadTmpl: "signup.head",
+			Bag: framework.Map{
+				csrf.TemplateTag: csrf.TemplateField(cxt),
+			}})
 }
 
 func (c *AuthController) performSignup(cxt framework.Context) {
