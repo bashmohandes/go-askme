@@ -12,3 +12,12 @@ type MiddlewareFunc func(context Context) bool
 func (f MiddlewareFunc) Run(context Context) bool {
 	return f(context)
 }
+
+type RouteAdapter func(f RouteHandler) RouteHandler
+
+func AdaptRoute(h RouteHandler, adapters ...RouteAdapter) RouteHandler {
+	for _, adapter := range adapters {
+		h = adapter(h)
+	}
+	return h
+}

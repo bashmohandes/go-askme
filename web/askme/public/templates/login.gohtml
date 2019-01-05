@@ -1,9 +1,9 @@
-{{define "login.head"}}
+{{define "standardlogin.head"}}
 <!-- Custom styles for this template -->
 <link href="/public/css/login.css" rel="stylesheet">
 {{end}}
 
-{{define "login.body"}}
+{{define "standardlogin.body"}}
 <div class="text-center">
     <form class="form-signin" action="/login" method="POST">    
         <h1 class="h3 mb-3 font-weight-normal">Please sign in</h1>
@@ -11,6 +11,7 @@
         <input type="email" id="inputEmail" name="email" class="form-control" placeholder="Email address" required autofocus>
         <label for="inputPassword" class="sr-only">Password</label>
         <input type="password" id="inputPassword" name="password" class="form-control" placeholder="Password" required>
+        {{ .Bag.csrfField }}
         <div class="checkbox">
             <label>
                 <input type="checkbox" name="rememberMe" value="true"> Remember me

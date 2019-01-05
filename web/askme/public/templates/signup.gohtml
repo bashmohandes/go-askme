@@ -19,6 +19,8 @@
         <label for="passwordAgain" class="sr-only">Password Again</label>
         <input type="password" id="passwordAgain" class="form-control" name="password_again" placeholder="One more time" required>
 
+        {{ .Bag.csrfField }}
+
         <button class="btn btn-lg btn-primary btn-block" type="submit">Register</button>
         <p class="mt-5 mb-3 text-muted">&copy; 2017-2018</p>
     </form>

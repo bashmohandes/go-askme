@@ -3,6 +3,7 @@ package askme
 import (
 	"github.com/bashmohandes/go-askme/web/askme/controllers"
 	"github.com/bashmohandes/go-askme/web/framework"
+	"github.com/bashmohandes/go-askme/web/middleware/csrf"
 )
 
 // App represents the AskMe web app
@@ -20,6 +21,6 @@ func NewApp(base framework.App,
 	}
 
 	//app.App.Use(middleware.NewRequestLogger())
-
+	app.App.Use(csrf.CSRF())
 	return app
 }
