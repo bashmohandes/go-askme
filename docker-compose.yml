@@ -10,7 +10,7 @@ services:
     # command: ["./wait-for-postgres.sh", "db", "go-askme"]
     command: ["./wait-for-it.sh", "db:5432", "--", "go-askme"]
   adminer:
-    image: adminer
+    image: "adminer:latest"
     restart: always
     depends_on:
       - "db"

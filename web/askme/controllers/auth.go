@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/bashmohandes/go-askme/user/usecase"
+	user "github.com/bashmohandes/go-askme/user/usecase"
 	"github.com/bashmohandes/go-askme/web/framework"
 	"github.com/bashmohandes/go-askme/web/middleware/csrf"
 )
@@ -47,7 +47,7 @@ func (c *AuthController) login(cxt framework.Context) {
 		cxt.ResponseWriter(),
 		framework.ViewModel{
 			BodyTmpl: "standardlogin.body",
-			Title: "Login", HeadTmpl: "standardlogin.head",
+			Title:    "Login", HeadTmpl: "standardlogin.head",
 			Bag: framework.Map{
 				csrf.TemplateTag: csrf.TemplateField(cxt),
 			}})
@@ -77,7 +77,7 @@ func (c *AuthController) signup(cxt framework.Context) {
 		cxt.ResponseWriter(),
 		framework.ViewModel{
 			BodyTmpl: "signup.body",
-			Title: "Signup",
+			Title:    "Signup",
 			HeadTmpl: "signup.head",
 			Bag: framework.Map{
 				csrf.TemplateTag: csrf.TemplateField(cxt),
