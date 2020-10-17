@@ -7,11 +7,11 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/bashmohandes/go-askme/answer/db"
+	answer "github.com/bashmohandes/go-askme/answer/db"
 	"github.com/bashmohandes/go-askme/models"
-	"github.com/bashmohandes/go-askme/question/db"
+	question "github.com/bashmohandes/go-askme/question/db"
 	userRepo "github.com/bashmohandes/go-askme/user/db"
-	"github.com/bashmohandes/go-askme/user/usecase"
+	user "github.com/bashmohandes/go-askme/user/usecase"
 	"github.com/bashmohandes/go-askme/web/askme"
 	"github.com/bashmohandes/go-askme/web/askme/controllers"
 	"github.com/bashmohandes/go-askme/web/framework"
@@ -40,6 +40,7 @@ func main() {
 	container.Provide(controllers.NewHomeController)
 	container.Provide(controllers.NewProfileController)
 	container.Provide(controllers.NewOktaController)
+	container.Provide(controllers.NewAuthController)
 	container.Provide(askme.NewApp)
 	err := container.Invoke(func(app *askme.App) {
 		err := migrateDB()
@@ -86,22 +87,22 @@ func newConfig() *framework.Config {
 		PostgresHost:       os.Getenv("POSTGRES_HOST"),
 		OktaClient:         os.Getenv("OKTA_CLIENT_ID"),
 		OktaSecret:         os.Getenv("OKTA_CLIENT_SECRET"),
-		OktaIssuer:         os.Getenv("OKTA_ISSUER"),				
-	}	
+		OktaIssuer:         os.Getenv("OKTA_ISSUER"),
+	}
 
 	linkedInIdp := os.Getenv("OKTA_SOCIAL_LINKEDIN_IDP")
 	facebookIdp := os.Getenv("OKTA_SOCIAL_FACEBOOK_IDP")
 
 	if linkedInIdp != "" {
 		config.OktaSocialIdps = append(config.OktaSocialIdps, framework.OktaSocialIdp{
-			ID: linkedInIdp,
+			ID:   linkedInIdp,
 			Name: "LINKEDIN",
 		})
 	}
 
 	if facebookIdp != "" {
 		config.OktaSocialIdps = append(config.OktaSocialIdps, framework.OktaSocialIdp{
-			ID: facebookIdp,
+			ID:   facebookIdp,
 			Name: "FACEBOOK",
 		})
 	}

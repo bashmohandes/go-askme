@@ -15,7 +15,7 @@ type App struct {
 func NewApp(base framework.App,
 	hc *controllers.HomeController,
 	pc *controllers.ProfileController,
-	ac *controllers.OktaController) *App {
+	ac *controllers.AuthController) *App {
 	app := &App{
 		App: base,
 	}
