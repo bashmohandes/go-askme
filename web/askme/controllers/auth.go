@@ -47,7 +47,7 @@ func (c *AuthController) login(cxt framework.Context) {
 		cxt.ResponseWriter(),
 		framework.ViewModel{
 			BodyTmpl: "standardlogin.body",
-			Title: "Login", HeadTmpl: "standardlogin.head",
+			Title:    "Login", HeadTmpl: "standardlogin.head",
 			Bag: framework.Map{
 				csrf.TemplateTag: csrf.TemplateField(cxt),
 			}})
@@ -64,7 +64,7 @@ func (c *AuthController) performLogin(cxt framework.Context) {
 	}
 
 	cxt.Session().Set("user", user)
-	cxt.SetUser(&framework.User{ID: string(user.ID), Name: user.Name})
+	cxt.SetUser(&framework.User{ID: fmt.Sprint(user.ID), Name: user.Name})
 	redir, _ := cxt.Session().Get("redir").(string)
 	if len(redir) == 0 {
 		redir = fmt.Sprintf("/u/%s", user.Email)
@@ -77,7 +77,7 @@ func (c *AuthController) signup(cxt framework.Context) {
 		cxt.ResponseWriter(),
 		framework.ViewModel{
 			BodyTmpl: "signup.body",
-			Title: "Signup",
+			Title:    "Signup",
 			HeadTmpl: "signup.head",
 			Bag: framework.Map{
 				csrf.TemplateTag: csrf.TemplateField(cxt),
