@@ -5,7 +5,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-//Answer by me
+// Answer by me
 type Answer struct {
 	gorm.Model
 	Text       string
@@ -15,7 +15,7 @@ type Answer struct {
 	User       User
 }
 
-//Question asked by users
+// Question asked by users
 type Question struct {
 	gorm.Model
 	ToUser     User
@@ -52,7 +52,7 @@ func (user *User) Ask(other *User, question string) *Question {
 	return &Question{
 		Text:       question,
 		ToUser:     *other,
-		ToUserID:   user.ID,
+		ToUserID:   other.ID,
 		FromUser:   *user,
 		FromUserID: user.ID,
 	}

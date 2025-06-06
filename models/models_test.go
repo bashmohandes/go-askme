@@ -35,6 +35,8 @@ func TestNewUser(t *testing.T) {
 func TestAskUserQuestion(t *testing.T) {
 	user1, _ := NewUser("test1@test.com", "Test User1", "p@ssws0rd")
 	user2, _ := NewUser("test2@test.com", "Test User2", "p@ssw0rd1")
+	user1.ID = 1
+	user2.ID = 2
 	question := user1.Ask(user2, "This is a dumb question!")
 
 	if question == nil {
@@ -47,13 +49,13 @@ func TestAskUserQuestion(t *testing.T) {
 		t.Fail()
 	}
 
-	if question.FromUser.ID != user1.ID {
-		t.Errorf("Wrong asker %d!= %d", question.FromUser.ID, user1.ID)
+	if question.FromUserID != user1.ID {
+		t.Errorf("Wrong asker %d!= %d", question.FromUserID, user1.ID)
 		t.Fail()
 	}
 
-	if question.ToUser.ID != user2.ID {
-		t.Errorf("Wrong askee %d != %d", question.ToUser.ID, user2.ID)
+	if question.ToUserID != user2.ID {
+		t.Errorf("Wrong askee %d != %d", question.ToUserID, user2.ID)
 		t.Fail()
 	}
 
