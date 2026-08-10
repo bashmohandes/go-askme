@@ -24,9 +24,6 @@ func TestLoadConfigUsesDefaults(t *testing.T) {
 	if config.Debug {
 		t.Error("Debug = true, want false")
 	}
-	if config.PublicFolder != defaultPublicFolder {
-		t.Errorf("PublicFolder = %q, want %q", config.PublicFolder, defaultPublicFolder)
-	}
 	if config.SessionMaxLifeTime != defaultSessionLife {
 		t.Errorf("SessionMaxLifeTime = %s, want %s", config.SessionMaxLifeTime, defaultSessionLife)
 	}
@@ -40,7 +37,6 @@ func TestLoadConfigReadsOverridesAndSocialProviders(t *testing.T) {
 	values["PORT"] = "9090"
 	values["POSTGRES_PORT"] = "5433"
 	values["DEBUG_MODE"] = "true"
-	values["PUBLIC_FOLDER"] = "custom/public"
 	values["SESSION_MAX_LIFE_TIME"] = "2h"
 	values["SESSION_COOKIE"] = "askme_session"
 	values["OKTA_SOCIAL_LINKEDIN_IDP"] = "linkedin-id"
@@ -54,8 +50,8 @@ func TestLoadConfigReadsOverridesAndSocialProviders(t *testing.T) {
 	if config.Port != 9090 || config.PostgresPort != 5433 || !config.Debug {
 		t.Errorf("numeric/bool overrides not applied: %+v", config)
 	}
-	if config.PublicFolder != "custom/public" || config.SessionCookie != "askme_session" {
-		t.Errorf("string overrides not applied: %+v", config)
+	if config.SessionCookie != "askme_session" {
+		t.Errorf("SessionCookie = %q, want %q", config.SessionCookie, "askme_session")
 	}
 	if config.SessionMaxLifeTime != 2*time.Hour {
 		t.Errorf("SessionMaxLifeTime = %s, want 2h", config.SessionMaxLifeTime)

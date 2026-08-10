@@ -10,7 +10,6 @@ import (
 
 const (
 	defaultPort          = 8080
-	defaultPublicFolder  = "web/askme/public"
 	defaultSessionLife   = 20 * time.Minute
 	defaultSessionCookie = ".session_id"
 	defaultPostgresHost  = "localhost"
@@ -21,7 +20,6 @@ const (
 type Config struct {
 	Debug              bool
 	Port               int
-	PublicFolder       string
 	SessionMaxLifeTime time.Duration
 	SessionCookie      string
 	PostgresUser       string
@@ -81,7 +79,6 @@ func loadConfig(lookup envLookup) (*Config, error) {
 	config := &Config{
 		Debug:              debug,
 		Port:               port,
-		PublicFolder:       stringSetting(lookup, "PUBLIC_FOLDER", defaultPublicFolder),
 		SessionMaxLifeTime: sessionLife,
 		SessionCookie:      stringSetting(lookup, "SESSION_COOKIE", defaultSessionCookie),
 		PostgresUser:       stringSetting(lookup, "POSTGRES_USER", ""),

@@ -60,9 +60,17 @@ func (r *renderer) initTemplates() error {
 	r.templates.Funcs(map[string]interface{}{
 		"RenderTemplate": r.renderTemplate,
 	})
-	for _, t := range r.fp.List() {
+	files, err := r.fp.List()
+	if err != nil {
+		return err
+	}
+	for _, t := range files {
 		if matcher.MatchString(t) {
-			_, err := r.templates.Parse(r.fp.String(t))
+			contents, err := r.fp.ReadFile(t)
+			if err != nil {
+				return err
+			}
+			_, err = r.templates.Parse(string(contents))
 			if err != nil {
 				return err
 			}

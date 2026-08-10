@@ -33,7 +33,7 @@ This is shaping up to be a tiny MVC framework, interesting
 This is not meant to depend on any fat frameworks, especially web frameworks, although a couple of things were used to tie things together.
 
 1. Uber's [dig](https://go.uber.org/dig) Dependency Injection framework
-2. Buffalo's [box](https://github.com/gobuffalo/packr) asset management
+2. Go's standard `embed` package for templates and static assets
 3. Google's [UUID](https://github.com/google/uuid) package
 4. joho/godotenv [godotenv](https://github.com/joho/godotenv)
 5. [gorm](https://github.com/jinzhu/gorm)

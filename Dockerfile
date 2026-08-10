@@ -15,9 +15,8 @@ COPY . .
 RUN apt-get update && apt-get install -y dos2unix
 RUN find . -type f -exec dos2unix {} \;
 
-# install with packr to embed resources
-RUN go get github.com/gobuffalo/packr/...
-RUN packr install -v .
+# Compile the application. Templates and static files are embedded by the Go toolchain.
+RUN go install .
 
 EXPOSE 8080
 CMD [ "go-askme" ]

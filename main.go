@@ -12,7 +12,6 @@ import (
 	"github.com/bashmohandes/go-askme/web/askme"
 	"github.com/bashmohandes/go-askme/web/askme/controllers"
 	"github.com/bashmohandes/go-askme/web/framework"
-	"github.com/gobuffalo/packr"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
 	_ "github.com/joho/godotenv/autoload"
@@ -22,7 +21,7 @@ import (
 func main() {
 	container := dig.New()
 	container.Provide(newConfig)
-	container.Provide(newFileProvider)
+	container.Provide(askme.NewPublicFiles)
 	container.Provide(framework.NewApp)
 	container.Provide(framework.NewRouter)
 	container.Provide(framework.NewRenderer)
@@ -51,10 +50,6 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-}
-
-func newFileProvider(config *framework.Config) framework.FileProvider {
-	return packr.NewBox(config.PublicFolder)
 }
 
 func newConfig() (*framework.Config, error) {
