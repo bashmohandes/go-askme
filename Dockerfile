@@ -1,4 +1,4 @@
-FROM golang:1.16
+FROM golang:1.25.1
 
 ENV GOBIN="$GOPATH/bin"
 WORKDIR /src

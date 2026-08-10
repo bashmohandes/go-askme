@@ -3,9 +3,6 @@ package main
 import (
 	"fmt"
 	"log"
-	"os"
-	"strconv"
-	"time"
 
 	"github.com/bashmohandes/go-askme/answer/db"
 	"github.com/bashmohandes/go-askme/models"
@@ -41,8 +38,8 @@ func main() {
 	container.Provide(controllers.NewProfileController)
 	container.Provide(controllers.NewOktaController)
 	container.Provide(askme.NewApp)
-	err := container.Invoke(func(app *askme.App) {
-		err := migrateDB()
+	err := container.Invoke(func(app *askme.App, config *framework.Config) {
+		err := migrateDB(config)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -52,7 +49,7 @@ func main() {
 	})
 
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 }
 
@@ -60,66 +57,22 @@ func newFileProvider(config *framework.Config) framework.FileProvider {
 	return packr.NewBox(config.PublicFolder)
 }
 
-func newConfig() *framework.Config {
-	port, err := strconv.Atoi(os.Getenv("PORT"))
-	if err != nil {
-		log.Fatalf("Incorrect 'PORT' format: %v\n", err)
-	}
-	debug, err := strconv.ParseBool(os.Getenv("DEBUG_MODE"))
-	if err != nil {
-		log.Fatalf("Incorrect 'DEBUG_MODE' format: %v\n", err)
-	}
-	sessionMaxLife, err := time.ParseDuration(os.Getenv("SESSION_MAX_LIFE_TIME"))
-	if err != nil {
-		log.Fatalf("Incorrect 'SESSION_MAX_LIFE_TIME' format: %v\n", err)
-	}
-
-	config := &framework.Config{
-		Debug:              debug,
-		PublicFolder:       os.Getenv("PUBLIC_FOLDER"),
-		Port:               port,
-		SessionMaxLifeTime: sessionMaxLife,
-		SessionCookie:      os.Getenv("SESSION_COOKIE"),
-		PostgresUser:       os.Getenv("POSTGRES_USER"),
-		PostgresPassword:   os.Getenv("POSTGRES_PASSWORD"),
-		PostgresDB:         os.Getenv("POSTGRES_DB"),
-		PostgresHost:       os.Getenv("POSTGRES_HOST"),
-		OktaClient:         os.Getenv("OKTA_CLIENT_ID"),
-		OktaSecret:         os.Getenv("OKTA_CLIENT_SECRET"),
-		OktaIssuer:         os.Getenv("OKTA_ISSUER"),				
-	}	
-
-	linkedInIdp := os.Getenv("OKTA_SOCIAL_LINKEDIN_IDP")
-	facebookIdp := os.Getenv("OKTA_SOCIAL_FACEBOOK_IDP")
-
-	if linkedInIdp != "" {
-		config.OktaSocialIdps = append(config.OktaSocialIdps, framework.OktaSocialIdp{
-			ID: linkedInIdp,
-			Name: "LINKEDIN",
-		})
-	}
-
-	if facebookIdp != "" {
-		config.OktaSocialIdps = append(config.OktaSocialIdps, framework.OktaSocialIdp{
-			ID: facebookIdp,
-			Name: "FACEBOOK",
-		})
-	}
-
-	return config
+func newConfig() (*framework.Config, error) {
+	return framework.LoadConfig()
 }
 
-func migrateDB() error {
+func migrateDB(config *framework.Config) error {
 	log.Print("Auto Migration Starting")
-	config := newConfig()
-	connStr := fmt.Sprintf("postgresql://%s:%s@%s:%d/%s?sslmode=disable", config.PostgresUser, config.PostgresPassword, config.PostgresHost, 5432, config.PostgresDB)
+	connStr := fmt.Sprintf("postgresql://%s:%s@%s:%d/%s?sslmode=disable", config.PostgresUser, config.PostgresPassword, config.PostgresHost, config.PostgresPort, config.PostgresDB)
 	db, err := gorm.Open("postgres", connStr)
-	defer db.Close()
 	if err != nil {
-		log.Fatalf("%v", err)
+		return fmt.Errorf("open database for migration: %w", err)
 	}
+	defer db.Close()
 	db.LogMode(config.Debug)
-	db.AutoMigrate(&models.User{}, &models.Question{}, &models.Answer{})
+	if err := db.AutoMigrate(&models.User{}, &models.Question{}, &models.Answer{}).Error; err != nil {
+		return fmt.Errorf("auto migrate database: %w", err)
+	}
 	log.Print("Auto Migration Ended")
 	return nil
 }

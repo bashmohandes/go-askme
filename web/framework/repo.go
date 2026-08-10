@@ -24,7 +24,7 @@ func NewConnection(config *Config) Connection {
 // Connect the app to db
 func (r *repo) Connect() (*gorm.DB, error) {
 	config := r.config
-	connStr := fmt.Sprintf("postgresql://%s:%s@%s:%d/%s?sslmode=disable", config.PostgresUser, config.PostgresPassword, config.PostgresHost, 5432, config.PostgresDB)
+	connStr := fmt.Sprintf("postgresql://%s:%s@%s:%d/%s?sslmode=disable", config.PostgresUser, config.PostgresPassword, config.PostgresHost, config.PostgresPort, config.PostgresDB)
 	db, err := gorm.Open("postgres", connStr)
 	if err != nil {
 		return nil, err

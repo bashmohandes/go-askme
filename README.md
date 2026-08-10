@@ -41,14 +41,13 @@ This is not meant to depend on any fat frameworks, especially web frameworks, al
 
 ## Build and Run
 
-* Install Go
-* Make sure your GOPATH environment variable is set correctly
-* Clone the project in any directory outside of your $GOPATH location, this will ensure go modules work as expected, and all dependencies will be downloaded on first run
+* Install the Go version declared in `go.mod`
+* Clone the repository; Go modules will download dependencies on the first build
 * (Optional) Install Docker
 * Clone the repo on your machine
-* Create a new .env file using the .env.dist as a template
+* Create a new .env file using the .env.example as a template
     * Fill in the missing secrets suitable for your environment
-    * Never check in the .env file, it is already included in .gitignore, and never add actual secrets in .env.dist
+    * Never check in the .env file, it is already included in .gitignore, and never add actual secrets in .env.example
 * There are two authentications methods supported
     * Basic Username / Password Auth
         * if you want to use this mode, make sure that AuthController is used in the ask.go instead of OktaController
@@ -75,6 +74,18 @@ This is not meant to depend on any fat frameworks, especially web frameworks, al
   ```
   
 Then from a browser window, navigate to http://localhost:8080
+
+## Development checks
+
+Pull requests are checked by GitHub Actions. Run the same core checks locally before
+submitting a change:
+
+```bash
+gofmt -w .
+go vet ./...
+go test -race -covermode=atomic -coverprofile=coverage.out ./...
+go build ./...
+```
 
 
 # Setting up Okta Developer Account

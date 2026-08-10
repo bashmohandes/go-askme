@@ -2,16 +2,16 @@ package csrf
 
 import (
 	"fmt"
-	"net/http"
 	"html/template"
+	"net/http"
 
 	"github.com/bashmohandes/go-askme/web/framework"
 	"github.com/google/uuid"
 )
 
 const (
-	fieldName	string = "csrf_token"
-	sessionKey  string = "_csrf_token" 
+	fieldName  string = "csrf_token"
+	sessionKey string = "_csrf_token"
 )
 
 var TemplateTag = "csrfField"

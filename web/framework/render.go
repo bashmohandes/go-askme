@@ -46,7 +46,7 @@ func (r *renderer) Render(w http.ResponseWriter, p ViewModel) {
 	if r.config.Debug {
 		err := r.initTemplates()
 		if err != nil {
-			log.Printf(err.Error())
+			log.Print(err)
 		}
 	}
 	err := r.templates.ExecuteTemplate(w, templateName, p)

@@ -3,7 +3,6 @@ package framework
 import (
 	"fmt"
 	"net/http"
-	"time"
 
 	"github.com/julienschmidt/httprouter"
 )
@@ -23,30 +22,7 @@ type app struct {
 	sessionStore SessionManager
 }
 
-// Config configuration
-type Config struct {
-	Debug              bool
-	Port               int
-	PublicFolder       string
-	SessionMaxLifeTime time.Duration
-	SessionCookie      string
-	PostgresUser       string
-	PostgresPassword   string
-	PostgresDB         string
-	PostgresHost       string
-	OktaClient         string
-	OktaSecret         string
-	OktaIssuer         string
-	OktaSocialIdps     []OktaSocialIdp
-}
-
-// OktaSocialIdp configuration
-type OktaSocialIdp struct {
-	ID   string
-	Name string
-}
-
-//Start method starts the AskMe App
+// Start method starts the AskMe App
 func (app *app) Start() error {
 	mux := httprouter.New()
 
