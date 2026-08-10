@@ -17,10 +17,10 @@ func NewRepository(conn framework.Connection) user.Repository {
 
 func (u *userRepo) Add(user *models.User) (*models.User, error) {
 	db, err := u.Connect()
-	defer db.Close()
 	if err != nil {
 		return nil, err
 	}
+	defer db.Close()
 
 	err = db.Create(&user).Error
 	if err != nil {
@@ -32,10 +32,10 @@ func (u *userRepo) Add(user *models.User) (*models.User, error) {
 
 func (u *userRepo) GetByEmail(email string) (*models.User, error) {
 	db, err := u.Connect()
-	defer db.Close()
 	if err != nil {
 		return nil, err
 	}
+	defer db.Close()
 	var user models.User
 	err = db.Where(&models.User{Email: email}).Find(&user).Error
 	if err != nil {
@@ -46,10 +46,10 @@ func (u *userRepo) GetByEmail(email string) (*models.User, error) {
 
 func (u *userRepo) GetByID(id uint) (*models.User, error) {
 	db, err := u.Connect()
-	defer db.Close()
 	if err != nil {
 		return nil, err
 	}
+	defer db.Close()
 	var user models.User
 	err = db.Find(&user, id).Error
 	if err != nil {

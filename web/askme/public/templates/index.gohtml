@@ -1,5 +1,23 @@
 {{define "feed.body"}}
 <div div="container">
+    {{if .Bag.User}}
+        {{if ne .Bag.User.Email .Bag.ProfileUser.Email}}
+            <div class="row">
+                <div class="col-9">
+                    <form class="form" action="/u/{{.Bag.ProfileUser.Email}}/questions" method="POST">
+                        {{.Bag.csrfField}}
+                        <div class="form-group">
+                            <label for="question">Ask {{.Bag.ProfileUser.Name}} a question</label>
+                            <textarea class="form-control form-control-lg" id="question" name="question" rows="2" required></textarea>
+                        </div>
+                        <p class="text-right">
+                            <button class="btn btn-primary btn-lg" type="submit">Ask</button>
+                        </p>
+                    </form>
+                </div>
+            </div>
+        {{end}}
+    {{end}}
     <div class="row">
         <div class="col-9">            
             <div class="row">
@@ -20,8 +38,8 @@
         <div class="col-3">
             <div class="card" style="width: 18rem;">
                 <div class="card-body">
-                    <h5 class="card-title">{{.Bag.User.Name}}</h5>
-                    <h6 class="card-subtitle mb-2 text-muted">{{.Bag.User.Email}}</h6>                    
+                    <h5 class="card-title">{{.Bag.ProfileUser.Name}}</h5>
+                    <h6 class="card-subtitle mb-2 text-muted">{{.Bag.ProfileUser.Email}}</h6>
                 </div>
             </div>
         </div>

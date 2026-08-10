@@ -12,6 +12,11 @@ type answersRepo struct {
 // LoadAnswers loads the specified user's set of answers
 func (r *answersRepo) LoadAnswers(userID uint) ([]*models.Answer, error) {
 	result := make([]*models.Answer, 0, len(r.data))
+	for _, item := range r.data {
+		if item.UserID == userID {
+			result = append(result, item)
+		}
+	}
 	return result, nil
 }
 
