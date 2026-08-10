@@ -18,6 +18,12 @@ The recommended destination is:
 - one reproducible local/CI/production path with health checks, structured logs,
   graceful shutdown, and automated dependency/security maintenance.
 
+The initial product scope is now settled: profiles and answered questions are public;
+profile creation is invitation-only; profile owners may opt into anonymous questions;
+the application owner manages invitations; and following and likes are part of the first
+modernized product release. There is no production data or legacy account migration to
+preserve.
+
 Do not combine all of this into one large rewrite. Establish a green baseline, remove
 Okta behind characterization tests, modernize infrastructure, then ship the new UX one
 vertical slice at a time.
@@ -125,21 +131,40 @@ This separation is worth preserving while simplifying its implementation.
 - There is no documented visual language, responsive behavior, keyboard/focus audit,
   reduced-motion treatment, contrast target, or automated accessibility check.
 
-## Product decisions to make before implementation
+## Confirmed product requirements
 
-Run a short product workshop and record the answers as architecture decision records
-(ADRs). These are blockers for polishing behavior, not for beginning Phase 0:
+Record these decisions in ADRs and translate them into acceptance tests before changing
+the relevant workflows:
 
-1. **Audience:** Are profiles and answered questions public to anonymous visitors, as
-   the README says, or private to signed-in users, as routes currently enforce?
-2. **Question identity:** Must askers be identified, optionally anonymous, or always
-   anonymous to the recipient/public?
-3. **Account lifecycle:** Is self-service signup still desired? Define email verification,
-   password reset, account deletion/export, and abuse recovery.
-4. **Social scope:** Are following, likes, search, notifications, moderation, or blocking
-   real near-term features? Remove non-working affordances until funded.
-5. **Data retention:** Decide whether existing Okta-linked users/data must be migrated,
-   invited to set a password, anonymized, or discarded.
+1. **Public content:** Profiles and answered questions are visible to anonymous visitors.
+   A visitor must not need a session to open a profile or its answered-question feed.
+   Unanswered questions, account settings, invitation administration, and moderation
+   controls remain private.
+2. **Configurable anonymous questions:** Each profile owner can allow or disallow
+   questions from unauthenticated visitors. The default should be **disabled** so a new
+   profile opts in deliberately. Signed-in questions retain their author internally;
+   anonymous questions have no user identity to expose. The public answer presentation
+   must respect the asker's anonymity choice.
+3. **Abuse resistance:** Anonymous ask endpoints need stricter body/length limits,
+   per-IP and per-profile rate limits, monitoring, and a report/block workflow. Add a
+   privacy-conscious CAPTCHA or equivalent challenge as a configurable escalation when
+   abuse signals or thresholds justify it, rather than burdening every visitor by
+   default. Document behavior when a limiter or CAPTCHA provider is unavailable.
+4. **Invitation-only profiles:** There is no open registration. The application owner
+   needs an authenticated administration screen to issue and revoke invitation links.
+   Invitations are random, single-use, hashed at rest, expire, and may be bound to an
+   intended email address. Redeeming one creates a profile and verifies control of that
+   email. Audit issuance, revocation, redemption, and expiry without logging raw tokens.
+5. **Initial administration:** Bootstrap the first owner/admin through an explicit,
+   one-time CLI command or deployment secret—not a public route or a hard-coded account.
+   Enforce an `admin` role server-side for every invitation-management action.
+6. **Social scope:** Following and likes are P1 requirements. Search, notifications, and
+   richer discovery can follow after the first modernization release. Moderation and
+   blocking are introduced as required to operate anonymous questions safely.
+7. **No legacy migration:** The application was never deployed beyond local testing, so
+   no Okta users or production data need preservation. Development databases can be
+   rebuilt from migrations and deterministic seed data; do not build dual-authentication
+   or legacy-schema compatibility machinery.
 
 ## Target architecture
 
@@ -182,7 +207,7 @@ product/legal review. Re-estimate after Phase 0.
 **Goal:** make current behavior observable and create a repeatable baseline before
 changing dependencies.
 
-- Document supported user journeys and settle the five product decisions above.
+- Convert the confirmed requirements above into ADRs and executable acceptance criteria.
 - Add `.env.example` with safe local defaults and one typed configuration loader that
   returns errors rather than terminating deep in constructors.
 - Add CI for formatting, `go test -race ./...`, `go vet ./...`, build, vulnerability
@@ -192,12 +217,12 @@ changing dependencies.
 - Add a deterministic development seed command with at least three personas and enough
   answered/unanswered content to exercise the UI.
 - Capture a small migration dataset and backup/restore rehearsal.
-- Add ADRs for local authentication, persistence, routing, UI approach, and public vs.
-  private content.
+- Add ADRs for local authentication, invitations/admin bootstrap, anonymous-question
+  abuse controls, persistence, routing, and the UI approach.
 
 **Exit criteria:** CI is green; a new contributor can start the app from documented
-commands; critical current workflows have black-box tests; product decisions are
-recorded.
+commands; critical current workflows have black-box tests; requirements and security
+boundaries are recorded.
 
 ### Phase 1 — remove Okta and harden local authentication (4-7 days)
 
@@ -205,24 +230,27 @@ recorded.
 
 - Register and test `AuthController` first; improve it to return generic authentication
   failures and field validation rather than raw errors.
-- Decide how existing users establish credentials. Prefer expiring, single-use password
-  setup links; never retain or rely on `defaultPassword`.
-- Add password reset and (if signup remains open) email verification using hashed,
-  expiring, single-use database tokens. Rate-limit signup/login/reset by account and IP.
+- Remove public signup and add invitation redemption. Build a server-authorized admin
+  screen to issue/revoke invitations plus a one-time CLI path that bootstraps the initial
+  owner. Store only invitation-token hashes and enforce expiry, one-time use, optional
+  intended-email binding, and audit events.
+- Add password reset and email verification using hashed, expiring, single-use database
+  tokens. Rate-limit invitation redemption, login, and reset by account and IP.
 - Rotate the session ID after authentication; store only the local user ID; set
   `HttpOnly`, `Secure` in production, `SameSite=Lax`, bounded lifetime, and an explicit
   inactivity policy.
 - Change logout to CSRF-protected POST. Apply CSRF protection to every state-changing
   browser route and add authorization tests for answering questions.
-- Once local auth and the migration path are proven, delete the Okta controller,
+- Once local auth and invitation redemption are proven, delete the Okta controller,
   callback route/template/utilities/configuration, token/session fields, social IdP
   options, verifier/JWX dependencies, and README instructions.
-- Add a database migration/cleanup procedure for obsolete identity/token-related data
-  (if any exists outside this repository).
+- Delete obsolete identity/token-related development data and recreate the local database
+  from versioned migrations and seed data; no legacy compatibility mode is needed.
 
 **Exit criteria:** no `OKTA_` configuration or Okta dependency remains; all auth flows
-work without a third party; session fixation, CSRF, brute-force, and object-level
-authorization tests pass.
+work without a third party; only an admin can manage invitations; open registration is
+impossible; and session fixation, CSRF, brute-force, and object-level authorization tests
+pass.
 
 ### Phase 2 — modernize the platform in controlled steps (1-2 weeks)
 
@@ -241,8 +269,12 @@ authorization tests pass.
 6. Replace `dig` with explicit wiring, then replace the custom router/framework with
    standard handlers and narrowly scoped middleware. Preserve URLs through contract
    tests and redirects where slugs change.
-7. Move from email URLs to stable public handles/slugs while retaining compatibility
-   redirects. Keep immutable numeric/UUID IDs internally.
+7. Move from email URLs to stable public handles/slugs. Because there is no production
+   data, seeded development profiles can be recreated without a compatibility period;
+   keep immutable numeric/UUID IDs internally.
+8. Model anonymous questions explicitly: allow a nullable asker, capture the profile
+   owner's opt-in at write time, and avoid storing unnecessary visitor identity. Add
+   indexes/storage needed by the selected per-profile/IP rate limiter.
 
 **Exit criteria:** no GORM v1, Packr, `dig`, or third-party router dependency remains;
 schema changes are migration-driven; all repositories share a bounded pool; the main
@@ -255,15 +287,24 @@ journeys and old URL redirects pass integration tests.
 Start with low-fidelity flows and a content model, then implement these slices in order:
 
 1. **App shell and auth:** responsive header, clear signed-in navigation, polished
-   login/signup/reset forms, inline validation, and visible focus/skip links.
+   invitation redemption/login/reset forms, inline validation, and visible focus/skip
+   links.
 2. **Public profile/feed:** profile identity and shareable ask CTA; readable question /
    answer cards; timestamps; intentional empty, loading, and error states.
-3. **Ask flow:** focused composer, recipient context, character count/limits, confirmation,
-   and abuse/reporting affordance based on product decisions.
+3. **Ask flow:** focused composer, recipient context, signed-in or explicitly anonymous
+   state, owner opt-in enforcement, character count/limits, confirmation, rate-limit
+   feedback, and abuse/reporting affordances. Introduce a CAPTCHA challenge only through
+   the defined risk-based escalation path.
 4. **Question inbox and answer flow:** private ownership cues, status filters, safe answer
    composer, confirmation, and optimistic enhancement only if it materially helps.
 5. **Account and safety:** profile editing, password/account controls, block/report tools,
    and privacy controls required by the chosen scope.
+6. **P1 social workflows:** following/unfollowing and liking/unliking answers, including
+   accessible counts and controls, authorization, duplicate-click idempotency, and
+   privacy/empty states. Do not display controls before their backend behavior exists.
+7. **Invitation administration:** an admin-only list of active/redeemed/revoked/expired
+   invitations with issue, copy-once, and revoke workflows; raw tokens are shown only at
+   creation.
 
 Create CSS tokens for color, type, spacing, radius, elevation, and motion. Build reusable
 template components for buttons, fields, alerts, avatars, cards, empty states, and
@@ -277,8 +318,9 @@ for the primary pages. Validate the redesign with five representative users befo
 fine polish.
 
 **Exit criteria:** all primary workflows work at 320px width and by keyboard; automated
-accessibility checks have no serious violations; dead search/like UI is implemented or
-removed; user validation findings are resolved or explicitly backlogged.
+accessibility checks have no serious violations; following and likes work end to end;
+dead search UI is removed; invitation administration is keyboard-accessible; and user
+validation findings are resolved or explicitly backlogged.
 
 ### Phase 4 — production readiness and launch (4-7 days)
 
@@ -297,7 +339,8 @@ removed; user validation findings are resolved or explicitly backlogged.
 - Add preview/staging deployment, migration-before-app release sequencing, smoke tests,
   rollback automation, dependency update automation, SBOM/image scanning, and secret
   scanning.
-- Perform threat modeling and a focused security review before opening public signup.
+- Perform threat modeling and a focused security review before enabling anonymous
+  questions in production.
 
 **Exit criteria:** a staging release and rollback are rehearsed; backup restoration is
 verified; dashboards/alerts observe an end-to-end smoke journey; the launch checklist
@@ -308,7 +351,11 @@ has named owners.
 ### P0 — before exposing the current app
 
 - Remove the default-password Okta provisioning path.
+- Remove open signup; implement secure invitation redemption and a one-time owner/admin
+  bootstrap command before allowing profile creation.
 - Enforce authorization on answer creation and CSRF on all writes.
+- Split public profile/answer reads from private inbox/settings/admin routes and test the
+  boundary without relying on template visibility.
 - Fix nil/error handling around database connections, redirects, lookups, and Okta HTTP.
 - Add HTTP timeouts/body limits and prevent raw internal errors from reaching users.
 - Fix the unfiltered answer feed and make answer persistence transactional.
@@ -316,15 +363,19 @@ has named owners.
 
 ### P1 — modernization release
 
-- Complete Okta removal and local account recovery/verification.
+- Complete Okta removal, invitation administration, and local account
+  recovery/verification.
 - Add migrations, shared connection pooling, stable handles, persistent sessions, and
   rate limiting.
 - Replace obsolete framework/build dependencies and deliver the core responsive redesign.
-- Add moderation primitives appropriate to the product's public/anonymity decisions.
+- Deliver configurable anonymous questions with per-profile/IP rate limiting,
+  observable CAPTCHA escalation, reporting, and blocking.
+- Implement following and likes with database constraints, idempotent writes, counts,
+  authorization, and end-to-end tests.
 
 ### P2 — after reliable usage data
 
-- Implement or permanently remove following, likes, notifications, and search.
+- Evaluate notifications and search; implement them only with validated workflows.
 - Add pagination/cursoring, profile discovery, richer moderation, and performance work
   only in response to observed needs.
 - Consider HTMX or small JavaScript modules for proven interaction pain points. A SPA,
@@ -334,14 +385,18 @@ has named owners.
 
 Use a test pyramid tied to product risks:
 
-- **Unit:** domain validation, password/token/session behavior, authorization policies,
-  configuration parsing, and use cases with fakes.
+- **Unit:** domain validation, password/invitation/session behavior, anonymous-question
+  opt-in and rate-limit policies, authorization rules, configuration parsing, and use
+  cases with fakes.
 - **HTTP/component:** handlers through `httptest`, real templates, cookies, CSRF, status
   codes, redirect safety, accessibility landmarks, and error messages.
 - **Integration:** repositories and migrations against the pinned PostgreSQL major;
-  transaction/concurrency cases; upgrade from a captured legacy schema.
-- **End-to-end:** signup/verification, login/logout/reset, ask, answer, public/private
-  visibility, account deletion, and abuse controls in a production-like container stack.
+  transaction/concurrency cases; clean migration from an empty database and deterministic
+  seed loading.
+- **End-to-end:** owner bootstrap; invitation issue/revoke/redeem/expiry; login/logout /
+  reset; public profile access; signed-in and anonymous asks; anonymous opt-out, rate
+  limit, and CAPTCHA escalation; answer; follow; like; private-route denial; account
+  deletion; and abuse controls in a production-like container stack.
 - **Non-functional:** race detector, fuzzing for parsers/validators, vulnerability and
   secret scanning, accessibility, responsive screenshots, load smoke tests, backup /
   restore, migration rollback, and session behavior across two app instances.
@@ -355,27 +410,33 @@ core writes require explicit branch and failure-path coverage.
 - Ship phases as small pull requests with behavior-focused acceptance criteria.
 - Put schema expansion before application use and cleanup in a later release
   (expand/migrate/contract). Never couple an irreversible migration to the first deploy.
-- Run old and new password/session behavior in a time-bounded compatibility window when
-  migrating real accounts, with metrics and an explicit removal date.
-- Preserve legacy email profile URLs with redirects while handles propagate.
+- Recreate development databases from versioned migrations and seed data. Do not add a
+  compatibility window for accounts or schema because there is no production data.
+- Move seeded email profile URLs to handles in one step; compatibility redirects are
+  optional for local bookmarks rather than a release constraint.
 - Use a feature flag for each redesigned workflow, not for permanent configuration.
 - Maintain a rollback runbook and verified backup before auth or schema cutovers.
-- Track four primary outcomes: successful login rate, ask completion rate, answer
-  completion/time-to-answer, and server error rate. Pair them with accessibility findings
-  and abuse reports so visual improvements do not hide product harm.
+- Track invitation redemption and successful login rates, signed-in versus anonymous ask
+  completion, rate-limit/CAPTCHA activation, answer completion/time-to-answer, follow /
+  like engagement, and server error rate. Pair them with accessibility findings, abuse
+  reports, and false-positive limiter challenges so growth does not hide product harm.
 
 ## Definition of modernized
 
 The project is modernized when it is not merely compiling on a new Go version, but when:
 
 - Okta and its operational assumptions are fully removed;
+- profile creation requires a valid invitation, and only the bootstrapped owner/admin can
+  issue or revoke invitations;
 - dependencies, containers, and PostgreSQL are pinned to supported versions with an
   owned update cadence;
-- local auth, sessions, authorization, CSRF, recovery, and abuse controls have automated
-  security tests;
+- public profiles/answers and private inbox/settings/admin boundaries are explicit and
+  covered by authorization tests;
+- local auth, sessions, invitations, CSRF, recovery, configurable anonymous questions,
+  rate limiting, CAPTCHA escalation, and abuse controls have automated security tests;
 - database changes are versioned, writes are transactional, and backup/restore is proven;
-- the four core workflows are responsive, accessible, understandable, and validated
-  with users;
+- invitation, profile, ask, answer, follow, and like workflows are responsive, accessible,
+  understandable, and validated with users;
 - CI produces a reproducible artifact and staging can deploy, observe, and roll it back;
 - runbooks, ADRs, threat model, and ownership make the next upgrade routine rather than
   another rescue project.
