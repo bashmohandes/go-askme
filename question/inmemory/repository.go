@@ -1,6 +1,8 @@
 package question
 
 import (
+	"fmt"
+
 	"github.com/bashmohandes/go-askme/models"
 	"github.com/bashmohandes/go-askme/question"
 )
@@ -33,7 +35,11 @@ func (r *questionsRepo) Add(q *models.Question) (*models.Question, error) {
 }
 
 func (r *questionsRepo) GetByID(questionId uint) (*models.Question, error) {
-	return nil, nil
+	question, ok := r.data[questionId]
+	if !ok {
+		return nil, fmt.Errorf("question does not exist")
+	}
+	return question, nil
 }
 
 // NewRepository creates a new repo object

@@ -1,6 +1,7 @@
 package user
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"strings"
@@ -21,6 +22,10 @@ type userUsecase struct {
 type authUsecase struct {
 	userRepo user.Repository
 }
+
+// ErrNotQuestionRecipient is returned when a user tries to answer a question
+// addressed to another profile.
+var ErrNotQuestionRecipient = errors.New("only the question recipient can answer it")
 
 // AnswersFeed type
 type AnswersFeed struct {
@@ -67,7 +72,7 @@ type AsksUsecase interface {
 type AnswersUsecase interface {
 	FetchUnansweredQuestions(user *models.User) (*QuestionsFeed, error)
 	FetchQuestionById(questionId uint) (*models.Question, error)
-	Answer(user *models.User, question *models.Question, answer string) *models.Answer
+	Answer(user *models.User, question *models.Question, answer string) (*models.Answer, error)
 }
 
 // AuthUsecase defines authentication use cases
@@ -143,21 +148,22 @@ func (svc *userUsecase) Unlike(user *models.User, answer *models.Answer) uint {
 	return svc.answerRepo.GetLikesCount(answer)
 }
 
-func (svc *userUsecase) Answer(user *models.User, question *models.Question, answer string) *models.Answer {
+func (svc *userUsecase) Answer(user *models.User, question *models.Question, answer string) (*models.Answer, error) {
+	if user == nil || question == nil || user.ID != question.ToUserID {
+		return nil, ErrNotQuestionRecipient
+	}
 	a := user.Answer(question, answer)
 	a, err := svc.answerRepo.Add(a)
 	if err != nil {
-		log.Println(err.Error())
-		return nil
+		return nil, fmt.Errorf("save answer: %w", err)
 	}
 
 	question.AnswerID = &a.ID
 	_, err = svc.questionRepo.Add(question)
 	if err != nil {
-		log.Println(err.Error())
-		return nil
+		return nil, fmt.Errorf("mark question answered: %w", err)
 	}
-	return a
+	return a, nil
 }
 
 func (svc *userUsecase) FetchQuestionById(questionId uint) (*models.Question, error) {

@@ -1,31 +1,7 @@
 {{define "profile.body"}}
 <h1>Questions</h1>
 <div div="container">
-    {{if ne .Bag.User.Email .Bag.ProfileUser.Email}}
-        <div class="row">
-            <div class="col">
-                <form class="form" action="/u/{{.Bag.ProfileUser.Email}}/questions" method="POST">
-                    <div class="form-group">
-                        <p>
-                            <label for="exampleFormControlTextarea1">Your Question?</label>
-                            <textarea class="form-control form-control-lg" id="question" name="question" rows="2"></textarea>
-                        </p>
-                        <p class="text-right">
-                            <button class="btn btn-primary btn-lg" type="submit">Ask Away</button>
-                        </p>
-                        <hr class="mb-4">
-                    </div>
-                </form>
-            </div>
-        </div>
-    {{else}}
-        <div class="row">
-            <div class="col">
-                <p>You can't ask yourself</p>
-                <hr class="mb-4">
-            </div>
-        </div>
-        {{range .Bag.Feed.Items}}
+    {{range .Bag.Feed.Items}}
             <div class="row">
                 <div class="col">
                     <div class="media">
@@ -37,6 +13,7 @@
                             <div class="row">
                                 <div class="col">
                                     <form class="form" action="/u/{{$.Bag.ProfileUser.Email}}/answer/{{.QuestionID}}" method="POST">
+                                        {{$.Bag.csrfField}}
                                         <div class="form-group">
                                             <p>
                                                 <label for="exampleFormControlTextarea1">Your Answer?</label>
@@ -56,7 +33,6 @@
                 </div>
             </div>
             <br>
-        {{end}}
     {{end}}
 </div>
 {{end}}

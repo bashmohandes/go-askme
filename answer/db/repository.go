@@ -13,14 +13,13 @@ type answersRepo struct {
 // LoadAnswers loads the specified user's set of answers
 func (r *answersRepo) LoadAnswers(userID uint) ([]*models.Answer, error) {
 	db, err := r.Connect()
-	defer db.Close()
-
 	if err != nil {
 		return nil, err
 	}
+	defer db.Close()
 
 	var answers []*models.Answer
-	err = db.Preload("User").Preload("Question").Preload("Question.FromUser").Order("created_at desc").Find(&answers).Error
+	err = db.Where("user_id = ?", userID).Preload("User").Preload("Question").Preload("Question.FromUser").Order("created_at desc").Find(&answers).Error
 	if err != nil {
 		return nil, err
 	}
@@ -42,10 +41,10 @@ func (r *answersRepo) GetLikesCount(answer *models.Answer) uint {
 
 func (r *answersRepo) Add(answer *models.Answer) (*models.Answer, error) {
 	db, err := r.Connect()
-	defer db.Close()
 	if err != nil {
 		return nil, err
 	}
+	defer db.Close()
 
 	err = db.Create(answer).Error
 	if err != nil {

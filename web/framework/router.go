@@ -1,6 +1,7 @@
 package framework
 
 import (
+	"io/fs"
 	"log"
 	"net/http"
 )
@@ -19,9 +20,35 @@ type RouteHandler func(context Context)
 
 // FileProvider fetches files by name
 type FileProvider interface {
-	List() []string
-	String(name string) string
-	Open(name string) (http.File, error)
+	List() ([]string, error)
+	ReadFile(name string) ([]byte, error)
+	http.FileSystem
+}
+
+type fileProvider struct {
+	root fs.FS
+	http.FileSystem
+}
+
+// NewFileProvider adapts an fs.FS for templates and static file serving.
+func NewFileProvider(root fs.FS) FileProvider {
+	return &fileProvider{root: root, FileSystem: http.FS(root)}
+}
+
+func (p *fileProvider) List() ([]string, error) {
+	var names []string
+	err := fs.WalkDir(p.root, ".", func(path string, entry fs.DirEntry, err error) error {
+		if err != nil || entry.IsDir() {
+			return err
+		}
+		names = append(names, path)
+		return nil
+	})
+	return names, err
+}
+
+func (p *fileProvider) ReadFile(name string) ([]byte, error) {
+	return fs.ReadFile(p.root, name)
 }
 
 // Route captures the http actions of the controller
