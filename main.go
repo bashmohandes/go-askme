@@ -15,45 +15,47 @@ import (
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
 	_ "github.com/joho/godotenv/autoload"
-	"go.uber.org/dig"
 )
 
 func main() {
-	container := dig.New()
-	container.Provide(newConfig)
-	container.Provide(askme.NewPublicFiles)
-	container.Provide(framework.NewApp)
-	container.Provide(framework.NewRouter)
-	container.Provide(framework.NewRenderer)
-	container.Provide(framework.NewInMemorySessionStore)
-	container.Provide(framework.NewConnection)
-	container.Provide(question.NewRepository)
-	container.Provide(answer.NewRepository)
-	container.Provide(userRepo.NewRepository)
-	container.Provide(user.NewAsksUsecase)
-	container.Provide(user.NewAnswersUsecase)
-	container.Provide(user.NewAuthUsecase)
-	container.Provide(controllers.NewHomeController)
-	container.Provide(controllers.NewProfileController)
-	container.Provide(controllers.NewOktaController)
-	container.Provide(askme.NewApp)
-	err := container.Invoke(func(app *askme.App, config *framework.Config) {
-		err := migrateDB(config)
-		if err != nil {
-			log.Fatal(err)
-		}
-		if e := app.Start(); e != nil {
-			log.Fatalln(e)
-		}
-	})
-
+	config, err := framework.LoadConfig()
 	if err != nil {
+		log.Fatal(err)
+	}
+	app, err := buildApplication(config)
+	if err != nil {
+		log.Fatal(err)
+	}
+	if err := migrateDB(config); err != nil {
+		log.Fatal(err)
+	}
+	if err := app.Start(); err != nil {
 		log.Fatal(err)
 	}
 }
 
-func newConfig() (*framework.Config, error) {
-	return framework.LoadConfig()
+func buildApplication(config *framework.Config) (*askme.App, error) {
+	publicFiles, err := askme.NewPublicFiles()
+	if err != nil {
+		return nil, fmt.Errorf("load embedded public files: %w", err)
+	}
+
+	router := framework.NewRouter()
+	renderer := framework.NewRenderer(publicFiles, config)
+	sessions := framework.NewInMemorySessionStore(config)
+	connection := framework.NewConnection(config)
+	questionRepository := question.NewRepository(connection)
+	answerRepository := answer.NewRepository(connection)
+	userRepository := userRepo.NewRepository(connection)
+	asks := user.NewAsksUsecase(questionRepository, answerRepository, userRepository)
+	answers := user.NewAnswersUsecase(questionRepository, answerRepository, userRepository)
+	auth := user.NewAuthUsecase(userRepository)
+	homeController := controllers.NewHomeController(router)
+	profileController := controllers.NewProfileController(router, renderer, asks, answers)
+	oktaController := controllers.NewOktaController(router, renderer, config, sessions, auth)
+	base := framework.NewApp(config, router, publicFiles, sessions)
+
+	return askme.NewApp(base, homeController, profileController, oktaController), nil
 }
 
 func migrateDB(config *framework.Config) error {
